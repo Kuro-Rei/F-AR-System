@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Log in | Andrei Rain Salt Dealer{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/asin.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+</head>
+
+<body>
+  <div class="login">
+    <section class="login-left">
+      <div class="brand company-brand">
+        <img class="company-logo" src="{{ url_for('static', filename='assets/andrei-rain-logo.png') }}" alt="Andrei Rain Salt Dealer" />
+      </div>
+      <form class="login-form" action="{{ url_for('auth.login') }}" method="post">
+        <span class="eyebrow">Sales management system</span>
+        <h1>Welcome back</h1>
+        <p>
+          Log in to manage your sales pipeline, orders, and team performance
+          in one place.
+        </p>
+          {% with messages = get_flashed_messages() %}
+            {% if messages %}
+              <p style="color: #c0392b; font-weight: 600;">{{ messages[0] }}</p>
+            {% endif %}
+          {% endwith %}
+        <div class="field">
+          <label for="user">Username</label>
+          <div>
+            <i class="i fa-solid fa-user"></i><input id="user" name = "username" type="text" placeholder="Enter your username" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="pass">Password</label>
+          <div>
+            <i class="i fa-solid fa-lock"></i><input id="pass" name = "password"type="password" placeholder="Enter your password" />
+          </div>
+        </div>
+        <div class="row-between">
+          <label><input type="checkbox" /> Remember me</label><a href="#" class="link">Forgot password?</a>
+        </div>
+        <button class="btn btn-primary" type="submit">Log in</button>
+        <p class="login-alt">
+          Don't have an account? <a href="#" class="link">Sign up</a>
+        </p>
+      </form>
+      <small>© 2026 All rights reserved.</small>
+    </section>
+    <section class="login-right">
+      <small>Manage your sales, grow your business.</small>
+      <h2>Your sales team,<br />beautifully connected.</h2>
+      <h3>About us Lorem ipsum</h3>
+      <p>
+        brr brr patapim, ang aking kasagutan ay, hinabol ka ng aso tapos na
+        dapa ka "wala na finish na", pwidi piru dipindi, dota o si dambi?,
+        nyenyenyenye .
+      </p>
+      <h3>Features</h3>
+      <div class="feature">
+        <span class="ico"></span>
+        <div>
+          <strong>Everything in one place</strong>
+          <p>Records, reports, and logs together.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="ico"></span>
+        <div>
+          <strong>Built for peace of mind</strong>
+          <p>Deleted records can always be restored.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+
+</html>

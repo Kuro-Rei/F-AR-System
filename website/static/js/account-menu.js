@@ -64,6 +64,6 @@
 
     confirm.addEventListener('click', () => {
         sessionStorage.removeItem('saltLoggedIn');
-        window.location.href = 'index.html';
+        window.location.href = '/logout';
     });
 })();

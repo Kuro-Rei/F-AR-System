@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Trash | Andrei Rain Salt Dealer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-    <link rel="stylesheet" href="css/asin.css" />
-    <link rel="stylesheet" href="css/trash.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/asin.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/trash.css') }}" />
   </head>
   <body>
     <div class="app">
@@ -14,22 +14,22 @@
         <div class="brand company-brand">
           <img
             class="company-logo"
-            src="assets/andrei-rain-logo.png"
+            src="{{ url_for('static', filename='assets/andrei-rain-logo.png') }}"
             alt="Andrei Rain Salt Dealer"
           />
         </div>
         <p class="nav-label">Sales management</p>
         <nav class="nav">
-          <a href="dashboard.html" class="nav-link"
+          <a href="{{ url_for('views.dashboard') }}" class="nav-link active"
             ><i class="i fa-solid fa-table-cells-large"></i>Dashboard</a
           >
-          <a href="reports.html" class="nav-link"
+          <a href="{{ url_for('views.reports') }}" class="nav-link"
             ><i class="i fa-solid fa-chart-column"></i>Reports</a
           >
-          <a href="trash.html" class="nav-link active"
+          <a href="{{ url_for('views.trash') }}" class="nav-link"
             ><i class="i fa-solid fa-trash-can"></i>Trash</a
           >
-          <a href="logs.html" class="nav-link"><i class="i fa-solid fa-list"></i>Logs</a>
+          <a href="{{ url_for('views.logs') }}" class="nav-link"><i class="i fa-solid fa-list"></i>Logs</a>
         </nav>
       </aside>
       <main>
@@ -53,7 +53,7 @@
                   <strong data-profile-name>Kurt</strong
                   ><small data-profile-role>Sales manager</small>
                 </div>
-                <a href="profile.html" class="account-option"
+                <a href="{{ url_for('views.profile') }}" class="account-option"
                   ><i class="i fa-solid fa-user"></i> My Profile</a
                 ><button
                   type="button"
@@ -234,9 +234,9 @@
         </div>
       </main>
     </div>
-    <script src="js/sige.js"></script>
-    <script src="js/profile-shared.js"></script>
-    <script src="js/trash.js"></script>
+    <script src="{{ url_for('static', filename='js/sige.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/profile-shared.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/trash.js') }}"></script>
     <div class="logout-overlay" id="logout-overlay" hidden>
       <section
         class="logout-dialog"
@@ -258,6 +258,6 @@
         </div>
       </section>
     </div>
-    <script src="js/account-menu.js"></script>
+    <script src="{{ url_for('static', filename='js/account-menu.js') }}"></script>
   </body>
 </html>
