@@ -83,7 +83,7 @@
               ><input
                 type="file"
                 id="import-file"
-                accept=".xlsx,.xls,.csv"
+                accept=".xlsx,.xls,.csv,.xlsm"
                 hidden
               />
             </div>
@@ -180,7 +180,7 @@
                 ><input
                   type="search"
                   id="ledger-search"
-                  placeholder="Search by customer, order or warehouse..."
+                  placeholder="Search by location or date (2026-09-05)..."
               /></label>
             </div>
             <div class="table-wrap">
@@ -188,154 +188,23 @@
                 <thead>
                   <tr>
                     <th class="th-check">
-                      <input
-                        type="checkbox"
-                        id="select-all"
-                        aria-label="Select all"
-                      />
+                      <input type="checkbox" id="select-all" aria-label="Select all" />
                     </th>
-                    <th>Customer</th>
-                    <th>Order</th>
-                    <th>Region</th>
-                    <th>Status</th>
-                    <th>Last updated</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Count</th>
+                    <th>Size (kg)</th>
+                    <th>Total volume (kg)</th>
+                    <th>Price</th>
                     <th class="num">Action</th>
                   </tr>
                 </thead>
-                <tbody id="ledger-body">
-                  <tr>
-                    <td>
-                      <input type="checkbox" aria-label="Select Denise Rain" />
-                    </td>
-                    <td>
-                      <div class="cust">
-                        <span class="avatar">DR</span>
-                        <div>
-                          <strong>Denise Rain</strong
-                          ><small>CU-2026-1234</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>15 Kilos</td>
-                    <td class="muted">Hagonoy</td>
-                    <td><span class="tag tag-green">Verified</span></td>
-                    <td class="muted">Oct 15, 2026</td>
-                    <td class="num">
-                      <button class="icon-btn" aria-label="Delete Denise Rain">
-                        <i class="i fa-solid fa-trash-can"></i><span>Delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        aria-label="Select Mary Sharmain"
-                      />
-                    </td>
-                    <td>
-                      <div class="cust">
-                        <span class="avatar">MS</span>
-                        <div>
-                          <strong>Mary Sharmain</strong
-                          ><small>CU-2026-1234</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>20 Kilos</td>
-                    <td class="muted">Malolos</td>
-                    <td><span class="tag tag-amber">Pending</span></td>
-                    <td class="muted">Oct 15, 2026</td>
-                    <td class="num">
-                      <button
-                        class="icon-btn"
-                        aria-label="Delete Mary Sharmain"
-                      >
-                        <i class="i fa-solid fa-trash-can"></i><span>Delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input type="checkbox" aria-label="Select Erica Mae" />
-                    </td>
-                    <td>
-                      <div class="cust">
-                        <span class="avatar">EM</span>
-                        <div>
-                          <strong>Erica Mae</strong><small>CU-2026-1234</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>25 Kilos</td>
-                    <td class="muted">iwan kuba naman</td>
-                    <td><span class="tag tag-green">Verified</span></td>
-                    <td class="muted">Oct 15, 2026</td>
-                    <td class="num">
-                      <button class="icon-btn" aria-label="Delete Erica Mae">
-                        <i class="i fa-solid fa-trash-can"></i><span>Delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        aria-label="Select Martin Jecols"
-                      />
-                    </td>
-                    <td>
-                      <div class="cust">
-                        <span class="avatar">MJ</span>
-                        <div>
-                          <strong>Martin Jecols</strong
-                          ><small>CU-2026-3456</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>30 Kilos</td>
-                    <td class="muted">Gagi ako nalang</td>
-                    <td><span class="tag tag-green">Verified</span></td>
-                    <td class="muted">Oct 15, 2026</td>
-                    <td class="num">
-                      <button
-                        class="icon-btn"
-                        aria-label="Delete Martin Jecols"
-                      >
-                        <i class="i fa-solid fa-trash-can"></i><span>Delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td><input type="checkbox" aria-label="Select Aaron" /></td>
-                    <td>
-                      <div class="cust">
-                        <span class="avatar">Aa</span>
-                        <div>
-                          <strong>Aaron</strong><small>CU-2026-1111</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>35 Kilos</td>
-                    <td class="muted">Hagonoy</td>
-                    <td><span class="tag tag-amber">Pending</span></td>
-                    <td class="muted">Oct 15, 2026</td>
-                    <td class="num">
-                      <button class="icon-btn" aria-label="Delete Aaron">
-                        <i class="i fa-solid fa-trash-can"></i><span>Delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
+                <tbody id="ledger-body"></tbody>
               </table>
             </div>
             <div class="table-foot">
-              <span id="ledger-foot">Showing 1 of 1,234 records</span>
-              <div class="pager">
-                <a href="#">‹</a><a href="#" class="active">1</a
-                ><a href="#">2</a><a href="#">3</a><a href="#">…</a
-                ><a href="#">12</a><a href="#">›</a>
-              </div>
+              <span id="ledger-foot">Showing 0 of 0 records</span>
+              <div class="pager" id="ledger-pager"></div>
             </div>
           </section>
         </div>
@@ -344,7 +213,7 @@
     <script src="{{ url_for('static', filename='js/sige.js') }}"></script>
     <script src="{{ url_for('static', filename='js/profile-shared.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/excel-dashboard-data.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='js/excel-dashboard-data.js') }}"></script> -->
     <script src="{{ url_for('static', filename='js/excel-dashboard.js') }}"></script>
     <div class="logout-overlay" id="logout-overlay" hidden>
       <section

@@ -1,17 +1,17 @@
 (() => {
     'use strict';
 
-    const rows = window.EXCEL_SALES_DATA || [];
+    let rows = [];
     const el = id => document.getElementById(id);
 
     const from = el('filter-from'),
         to = el('filter-to'),
         loc = el('filter-location');
 
-    const defaults = {
-        from: '2026-08-19',
-        to: '2026-09-05',
-        location: 'All'
+    let defaults = { 
+        from: '', 
+        to: '', 
+        location: 'All' 
     };
 
     const money = n => '₱' + n.toLocaleString('en-PH', {
@@ -25,13 +25,14 @@
         maximumFractionDigits: 2
     });
 
-    const locations = [...new Set(rows.map(r => r.location).filter(Boolean))]
-        .sort((a, b) => a.localeCompare(b));
+    function fillLocations() {
+        const current = loc.value || 'All';
+        const names = [...new Set(rows.map(r => r.location).filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b));
 
-    loc.replaceChildren(
-        new Option('All', 'All'),
-        ...locations.map(s => new Option(s, s))
-    );
+        loc.replaceChildren(new Option('All', 'All'), ...names.map(s => new Option(s, s)));
+        loc.value = names.includes(current) ? current : 'All';
+    }
 
     const SVG = 'http://www.w3.org/2000/svg';
 
@@ -343,5 +344,17 @@
 
     el('reset-dashboard-filters').addEventListener('click', reset);
 
-    reset();
+    async function load() {
+        const res = await fetch('/api/sales');
+        rows = await res.json();
+        fillLocations();
+
+        const dates = rows.map(r => r.date).sort();
+        defaults.from = dates[0] || '';
+        defaults.to = dates[dates.length - 1] || '';
+        reset();
+    }
+
+    window.reloadDashboard = load;   // dashboard.js calls this after an import
+    load();
 })();
