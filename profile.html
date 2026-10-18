@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Profile | Andrei Rain Salt Dealer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link rel="stylesheet" href="css/asin.css" />
+    <link rel="stylesheet" href="css/profile.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand company-brand">
+          <img
+            class="company-logo"
+            src="assets/andrei-rain-logo.png"
+            alt="Andrei Rain Salt Dealer"
+          />
+        </div>
+        <p class="nav-label">Sales management</p>
+        <nav class="nav">
+          <a href="dashboard.html" class="nav-link"
+            ><i class="i fa-solid fa-table-cells-large"></i>Dashboard</a
+          >
+          <a href="reports.html" class="nav-link"
+            ><i class="i fa-solid fa-chart-column"></i>Reports</a
+          >
+          <a href="trash.html" class="nav-link"
+            ><i class="i fa-solid fa-trash-can"></i>Trash</a
+          >
+          <a href="logs.html" class="nav-link"><i class="i fa-solid fa-list"></i>Logs</a>
+        </nav>
+      </aside>
+      <main>
+        <header class="topbar">
+          <div><b>Account</b><span class="sep">›</span>My profile</div>
+          <div class="topbar-actions">
+            <span class="period-tag">Q3 2026</span>
+            <div class="account-menu">
+              <button
+                class="account-trigger"
+                type="button"
+                aria-label="Open account menu"
+                aria-haspopup="true"
+                aria-expanded="false"
+                id="account-trigger"
+              >
+                <span class="account-avatar" data-profile-initials>K</span>
+              </button>
+              <div class="account-dropdown" id="account-dropdown" hidden>
+                <div class="account-info">
+                  <strong data-profile-name>Kurt</strong
+                  ><small data-profile-role>Sales manager</small>
+                </div>
+                <a href="profile.html" class="account-option"
+                  ><i class="i fa-solid fa-user"></i> My Profile</a
+                ><button
+                  type="button"
+                  class="account-option account-logout"
+                  id="logout-trigger"
+                >
+                  <span class="logout-symbol" aria-hidden="true">↪</span> Log
+                  out
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div class="content profile-content">
+          <div class="page-head">
+            <div>
+              <h1>My Profile</h1>
+              <p>Manage your personal information and account preferences.</p>
+            </div>
+          </div>
+          <section class="card profile-hero">
+            <div class="hero-banner"></div>
+            <div class="hero-body">
+              <div class="profile-avatar" id="hero-initials">K</div>
+              <div class="hero-info">
+                <h2 id="hero-name">Kurt</h2>
+                <p id="hero-role">Sales manager</p>
+                <span class="tag tag-blue">Active account</span>
+              </div>
+              <a href="#profile-form" class="btn hero-edit"
+                ><i class="i fa-solid fa-user"></i>Edit profile</a
+              >
+            </div>
+          </section>
+          <div class="profile-grid">
+            <section class="card profile-panel">
+              <div class="card-head">
+                <div>
+                  <h2>Personal Information</h2>
+                  <p>Update the details shown in your workspace.</p>
+                </div>
+              </div>
+              <form id="profile-form" class="profile-form">
+                <div class="field-grid">
+                  <label class="field"
+                    ><span>Full name <em>*</em></span
+                    ><input
+                      name="name"
+                      id="profile-name"
+                      type="text"
+                      autocomplete="name"
+                      maxlength="80"
+                      required
+                      placeholder="Your full name"
+                  /></label>
+                  <label class="field"
+                    ><span>Job title <em>*</em></span
+                    ><input
+                      name="role"
+                      id="profile-role"
+                      type="text"
+                      maxlength="60"
+                      required
+                      placeholder="Your role"
+                  /></label>
+                  <label class="field"
+                    ><span>Email address</span
+                    ><input
+                      name="email"
+                      id="profile-email"
+                      type="email"
+                      autocomplete="email"
+                      maxlength="120"
+                      placeholder="name@example.com"
+                  /></label>
+                  <label class="field"
+                    ><span>Phone number</span
+                    ><input
+                      name="phone"
+                      id="profile-phone"
+                      type="tel"
+                      autocomplete="tel"
+                      maxlength="30"
+                      placeholder="+63 9XX XXX XXXX"
+                  /></label>
+                </div>
+                <div class="form-actions">
+                  <button class="btn" type="button" id="cancel-profile">
+                    Cancel</button
+                  ><button class="btn btn-primary" type="submit">
+                    Save changes
+                  </button>
+                </div>
+                <p
+                  class="save-note"
+                  id="save-note"
+                  role="status"
+                  aria-live="polite"
+                ></p>
+              </form>
+            </section>
+            <aside class="profile-side">
+              <section class="card side-panel">
+                <div class="card-head">
+                  <div>
+                    <h2>Account overview</h2>
+                    <p>Your workspace details</p>
+                  </div>
+                </div>
+                <div class="overview-row">
+                  <span>Organization</span
+                  ><img class="organization-logo" src="assets/andrei-rain-logo.png" alt="Andrei Rain Salt Dealer" />
+                </div>
+                <div class="overview-row">
+                  <span>Account status</span
+                  ><span class="tag tag-green">Active</span>
+                </div>
+                <div class="overview-row">
+                  <span>Access level</span
+                  ><strong id="summary-role">Sales manager</strong>
+                </div>
+              </section>
+              <section class="card side-panel">
+                <div class="card-head">
+                  <div>
+                    <h2>Quick access</h2>
+                    <p>Explore your workspace</p>
+                  </div>
+                </div>
+                <div class="quick-links">
+                  <a href="dashboard.html"
+                    ><i class="i fa-solid fa-table-cells-large"></i>Go to Dashboard <span>→</span></a
+                  ><a href="reports.html"
+                    ><i class="i fa-solid fa-chart-column"></i>View Reports <span>→</span></a
+                  ><a href="logs.html"
+                    ><i class="i fa-solid fa-list"></i>Activity Logs <span>→</span></a
+                  >
+                </div>
+              </section>
+            </aside>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="js/sige.js"></script>
+    <script src="js/profile-shared.js"></script>
+    <script src="js/profile.js"></script>
+    <div class="logout-overlay" id="logout-overlay" hidden>
+      <section
+        class="logout-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-title"
+        aria-describedby="logout-description"
+      >
+        <div class="logout-dialog-icon">↪</div>
+        <h2 id="logout-title">Log out of your account?</h2>
+        <p id="logout-description">
+          Are you sure you want to log out? You will return to the login page.
+        </p>
+        <div class="logout-dialog-actions">
+          <button type="button" class="btn" id="logout-cancel">Cancel</button
+          ><button type="button" class="btn btn-primary" id="logout-confirm">
+            Yes, log out
+          </button>
+        </div>
+      </section>
+    </div>
+    <script src="js/account-menu.js"></script>
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reports | Andrei Rain Salt Dealer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link rel="stylesheet" href="css/asin.css" />
+    <link rel="stylesheet" href="css/reports.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand company-brand">
+          <img
+            class="company-logo"
+            src="assets/andrei-rain-logo.png"
+            alt="Andrei Rain Salt Dealer"
+          />
+        </div>
+        <p class="nav-label">Sales management</p>
+        <nav class="nav">
+          <a href="dashboard.html" class="nav-link"
+            ><i class="i fa-solid fa-table-cells-large"></i>Dashboard</a
+          >
+          <a href="reports.html" class="nav-link active"
+            ><i class="i fa-solid fa-chart-column"></i>Reports</a
+          >
+          <a href="trash.html" class="nav-link"
+            ><i class="i fa-solid fa-trash-can"></i>Trash</a
+          >
+          <a href="logs.html" class="nav-link"><i class="i fa-solid fa-list"></i>Logs</a>
+        </nav>
+      </aside>
+      <main>
+        <header class="topbar">
+          <div><b>Reports</b><span class="sep">›</span>Sales analysis</div>
+          <div class="topbar-actions">
+            
+            <div class="account-menu">
+              <button
+                class="account-trigger"
+                type="button"
+                aria-label="Open account menu"
+                aria-haspopup="true"
+                aria-expanded="false"
+                id="account-trigger"
+              >
+                <span class="account-avatar" data-profile-initials>K</span>
+              </button>
+              <div class="account-dropdown" id="account-dropdown" hidden>
+                <div class="account-info">
+                  <strong data-profile-name>Kurt</strong
+                  ><small data-profile-role>Sales manager</small>
+                </div>
+                <a href="profile.html" class="account-option"
+                  ><i class="i fa-solid fa-user"></i> My Profile</a
+                ><button
+                  type="button"
+                  class="account-option account-logout"
+                  id="logout-trigger"
+                >
+                  <span class="logout-symbol" aria-hidden="true">↪</span> Log
+                  out
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div class="content">
+          <div class="page-head">
+            <div>
+              <h1>Reports</h1>
+              <p>Detailed reports based on the same Excel sales records as the Dashboard.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn" id="export-csv" type="button">
+                <i class="i fa-solid fa-download"></i>Export CSV
+              </button>
+              <button class="btn btn-primary" id="print-pdf" type="button">
+                <i class="i fa-solid fa-print"></i>Print PDF
+              </button>
+            </div>
+          </div>
+
+          <section class="card report-filters" aria-label="Report filters">
+            <div class="card-head">
+              <div>
+                <h2>Report filters</h2>
+                <p>Refine results by date, location, price, volume, or record search.</p>
+              </div>
+              <button class="btn" id="report-reset" type="button">Reset filters</button>
+            </div>
+            <div class="report-filter-grid">
+              <label>From date<input id="report-from" type="date" /></label>
+              <label>To date<input id="report-to" type="date" /></label>
+              <label>Location<select id="report-location"><option value="All">All locations</option></select></label>
+              <label>Price per kilo
+                <select id="report-price">
+                  <option value="All">All prices</option>
+                  <option value="Below ₱9/kg">Below ₱9/kg</option>
+                  <option value="₱9–₱10.99/kg">₱9–₱10.99/kg</option>
+                  <option value="₱11+/kg">₱11+/kg</option>
+                </select>
+              </label>
+              <label>Volume range
+                <select id="report-volume-range">
+                  <option value="All">All volumes</option>
+                  <option value="&lt;500 kg">Below 500 kg</option>
+                  <option value="500–1,500 kg">500–1,500 kg</option>
+                  <option value="&gt;1,500 kg">Above 1,500 kg</option>
+                </select>
+              </label>
+              <label>Search records<input id="report-search" type="search" placeholder="Search date or location..." /></label>
+            </div>
+            <p class="report-status" id="report-status" role="status"></p>
+          </section>
+
+          <section class="grid-3 report-summary" aria-label="Report summary">
+            <article class="card insight"><small>Total sales</small><strong id="report-sales">₱0.00</strong><p>Revenue from matching records</p></article>
+            <article class="card insight"><small>Total volume</small><strong id="report-volume">0 kg</strong><p>Kilograms sold</p></article>
+            <article class="card insight"><small>Average price per kg</small><strong id="report-average">—</strong><p id="report-count">0 matching records</p></article>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><div><h2>Sales by location</h2><p>All matching locations, ranked by revenue</p></div></div>
+            <div class="bars" id="report-location-bars"></div>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><div><h2>Daily summary</h2><p>Sales totals by date within the selected range</p></div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th class="num">Orders</th><th class="num">Kilos</th><th class="num">Sales</th></tr></thead>
+                <tbody id="report-daily-body"></tbody>
+              </table>
+            </div>
+            <div class="table-foot"><span id="report-days">0 days with sales</span><strong id="report-total">Total ₱0.00</strong></div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="js/sige.js"></script>
+    <script src="js/profile-shared.js"></script>
+    <script src="js/excel-dashboard-data.js"></script>
+    <script src="js/reports.js"></script>
+    <div class="logout-overlay" id="logout-overlay" hidden>
+      <section
+        class="logout-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-title"
+        aria-describedby="logout-description"
+      >
+        <div class="logout-dialog-icon">↪</div>
+        <h2 id="logout-title">Log out of your account?</h2>
+        <p id="logout-description">
+          Are you sure you want to log out? You will return to the login page.
+        </p>
+        <div class="logout-dialog-actions">
+          <button type="button" class="btn" id="logout-cancel">Cancel</button
+          ><button type="button" class="btn btn-primary" id="logout-confirm">
+            Yes, log out
+          </button>
+        </div>
+      </section>
+    </div>
+    <script src="js/account-menu.js"></script>
+  </body>
+</html>

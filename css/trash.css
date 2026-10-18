@@ -1,0 +1,56 @@
+tr:has(.row-check:checked) {
+  background: var(--blue-50);
+}
+
+.bulk-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 20px 16px;
+  padding: 12px 16px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 12px;
+}
+.bulk-bar .btn {
+  padding: 8px 14px;
+}
+.bulk-bar .btn-ghost {
+  background: none;
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.has-trash:has(.row-check:checked) .bulk-bar {
+  display: flex;
+}
+
+.empty {
+  display: none;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.empty h2 {
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.is-empty .empty {
+  display: block;
+}
+.is-empty .table-wrap,
+.is-empty .toolbar,
+.is-empty .table-foot,
+.is-empty .bulk-bar {
+  display: none;
+}
+.bulk-bar b {
+  font-weight: 600;
+}
+.bulk-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

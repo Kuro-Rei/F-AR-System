@@ -1,0 +1,38 @@
+
+.page-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.insight { display: grid; gap: 8px; padding: 20px; }
+.insight strong { font-size: 24px; font-weight: 650; overflow-wrap: anywhere; }
+.insight p, .report-status { color: var(--muted); }
+.report-filters { padding: 22px 24px; }
+.report-filters .card-head { margin-bottom: 20px; }
+.report-filter-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.report-filter-grid label { display: grid; min-width: 0; gap: 8px; color: var(--muted); font-size: 13px; }
+.report-filter-grid input, .report-filter-grid select {
+  box-sizing: border-box; width: 100%; min-width: 0; height: 44px;
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 0 12px; background: white; color: var(--text);
+  font: inherit; font-size: 14px;
+}
+.report-filter-grid input:focus-visible, .report-filter-grid select:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.report-status { margin: 16px 0 0; font-size: 13px; }
+.report-summary { margin: 18px 0; }
+.bar-row { grid-template-columns: minmax(100px, 180px) minmax(0, 1fr) minmax(110px, 150px); }
+.bar-row > span { overflow-wrap: anywhere; }
+.bar-row b { white-space: nowrap; }
+.report-empty { padding: 18px 4px; color: var(--muted); text-align: center; }
+@media (max-width: 950px) { .report-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .report-filter-grid { grid-template-columns: 1fr; }
+  .report-filters { padding: 16px; }
+  .report-filters .card-head { align-items: flex-start; flex-wrap: wrap; }
+  .bar-row { grid-template-columns: minmax(75px, 110px) minmax(0, 1fr) minmax(80px, 110px); gap: 8px; font-size: 12px; }
+}
+@media print {
+  .sidebar, .topbar, .page-actions, .report-filters, .logout-overlay, .toast { display: none !important; }
+  .app { display: block; }
+  main { width: 100%; }
+  .content { padding: 0; }
+  .card { break-inside: avoid; }
+  .table-wrap { overflow: visible; }
+  body { background: white; }
+}
