@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, session, jsonify
+from flask import Blueprint, current_app, render_template, request, flash, redirect, url_for, session, jsonify
 from .imports import import_excel
 from . import db
 views = Blueprint('views', __name__)
@@ -7,6 +7,8 @@ views = Blueprint('views', __name__)
 @views.before_request
 def require_login():
     if request.endpoint != 'views.index' and 'user_id' not in session:
+        if request.path.startswith('/api/'):
+            return jsonify(error='Authentication required.'), 401
         return redirect(url_for('views.index'))
     
 @views.route('/')
@@ -34,6 +36,60 @@ def reports():
 @views.route('/trash')
 def trash():
     return render_template("trash.html")
+
+
+@views.route('/api/trash')
+def api_trash():
+    conn = None
+    cur = None
+
+    try:
+        conn = db.get_connection()
+        cur = conn.cursor(dictionary=True)
+        cur.execute("""
+            SELECT b.booking_id,
+                   DATE_FORMAT(b.booking_date, '%Y-%m-%d') AS date,
+                   l.location_name AS location,
+                   b.quantity AS count,
+                   s.size_kilos AS size,
+                   p.price AS price,
+                   u.full_name AS deleted_by,
+                   DATE_FORMAT(b.deleted_at, '%Y-%m-%d %H:%i:%s') AS deleted_at
+            FROM booking b
+            JOIN location l ON l.location_id = b.location_id
+            LEFT JOIN salt s ON s.booking_id = b.booking_id
+            LEFT JOIN price p ON p.booking_id = b.booking_id
+            LEFT JOIN users u ON u.user_id = b.deleted_by
+            WHERE b.deleted_at IS NOT NULL
+            ORDER BY b.deleted_at DESC, b.booking_id DESC
+        """)
+        rows = cur.fetchall()
+
+        for row in rows:
+            if row['count'] is not None:
+                row['count'] = int(row['count'])
+            if row['size'] is not None:
+                row['size'] = float(row['size'])
+            if row['price'] is not None:
+                row['price'] = float(row['price'])
+
+        return jsonify(rows=rows)
+
+    except Exception:
+        current_app.logger.exception('Could not load Trash records.')
+        return jsonify(error='Could not load Trash records. Please try again.'), 500
+
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                current_app.logger.exception('Could not close Trash query cursor.')
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                current_app.logger.exception('Could not close Trash query connection.')
 
 @views.route('/import', methods=['POST'])
 def import_file():
@@ -118,9 +174,186 @@ def api_records():
 
     # easy use
     for r in rows:
-        r['date'] = r['date'].strftime('%b %d, %Y')
+        r['date'] = r['date'].strftime('%Y-%m-%d')
         r['size'] = float(r['size'])
         r['volume'] = float(r['volume'])
         r['price'] = float(r['price'])
 
     return jsonify(rows=rows, total=total, page=page, pages=pages, per_page=per_page)
+
+
+@views.route('/api/records/<booking_id>/trash', methods=['POST'])
+def trash_record(booking_id):
+    # Session cookies are used for authentication, but this endpoint does not
+    # yet validate a CSRF token. Add that protection with the frontend request.
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify(error='Authentication required.'), 401
+
+    if session.get('role') not in ('Admin', 'User'):
+        return jsonify(error='This account is not allowed to perform this action.'), 403
+
+    if (
+        not booking_id.isascii()
+        or not booking_id.isdigit()
+        or len(booking_id) > 10
+        or int(booking_id) < 1
+        or int(booking_id) > 2147483647
+    ):
+        return jsonify(error='Booking ID must be a positive integer.'), 400
+
+    booking_id = int(booking_id)
+    conn = None
+    cur = None
+
+    try:
+        conn = db.get_connection()
+        conn.start_transaction()
+        cur = conn.cursor(dictionary=True)
+
+        # Lock this booking while checking and changing its Trash state.
+        cur.execute(
+            'SELECT deleted_at FROM booking WHERE booking_id = %s FOR UPDATE',
+            (booking_id,)
+        )
+        booking = cur.fetchone()
+
+        if booking is None:
+            conn.rollback()
+            return jsonify(error='Booking record was not found.'), 404
+
+        if booking['deleted_at'] is not None:
+            conn.rollback()
+            return jsonify(error='Booking record is already in Trash.'), 409
+
+        cur.execute(
+            'UPDATE booking '
+            'SET deleted_at = CURRENT_TIMESTAMP, deleted_by = %s '
+            'WHERE booking_id = %s AND deleted_at IS NULL',
+            (user_id, booking_id)
+        )
+
+        if cur.rowcount != 1:
+            conn.rollback()
+            return jsonify(error='Booking record could not be moved to Trash.'), 409
+
+        cur.execute(
+            'INSERT INTO activity_logs (user_id, booking_id, action, details) '
+            'VALUES (%s, %s, %s, %s)',
+            (user_id, booking_id, 'DELETE', f'Moved booking #{booking_id} to Trash')
+        )
+
+        conn.commit()
+        return jsonify(message='Booking moved to Trash.', booking_id=booking_id), 200
+
+    except Exception:
+        if conn is not None:
+            try:
+                conn.rollback()
+            except Exception:
+                current_app.logger.exception('Could not roll back failed Trash operation.')
+        current_app.logger.exception('Could not move booking to Trash.')
+        return jsonify(error='Could not move booking to Trash. Please try again.'), 500
+
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                current_app.logger.exception('Could not close database cursor.')
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                current_app.logger.exception('Could not close database connection.')
+
+
+@views.route('/api/records/<booking_id>/restore', methods=['POST'])
+def restore_record(booking_id):
+    user_id = session.get('user_id')
+    if user_id is None:
+        return jsonify(error='Authentication required.'), 401
+
+    if session.get('role') not in ('Admin', 'User'):
+        return jsonify(error='This account is not allowed to perform this action.'), 403
+
+    if (
+        not booking_id.isascii()
+        or not booking_id.isdigit()
+        or len(booking_id) > 10
+        or int(booking_id) < 1
+        or int(booking_id) > 2147483647
+    ):
+        return jsonify(error='Booking ID must be a positive integer.'), 400
+
+    booking_id = int(booking_id)
+    conn = None
+    cur = None
+
+    try:
+        conn = db.get_connection()
+        conn.start_transaction()
+        cur = conn.cursor(dictionary=True)
+
+        cur.execute(
+            'SELECT deleted_at FROM booking WHERE booking_id = %s FOR UPDATE',
+            (booking_id,)
+        )
+        booking = cur.fetchone()
+
+        if booking is None:
+            conn.rollback()
+            return jsonify(error='Booking record was not found.'), 404
+
+        if booking['deleted_at'] is None:
+            conn.rollback()
+            return jsonify(error='Booking record is not in Trash.'), 409
+
+        cur.execute(
+            'UPDATE booking '
+            'SET deleted_at = NULL, deleted_by = NULL '
+            'WHERE booking_id = %s AND deleted_at IS NOT NULL',
+            (booking_id,)
+        )
+
+        if cur.rowcount != 1:
+            conn.rollback()
+            return jsonify(error='Booking record could not be restored.'), 409
+
+        cur.execute(
+            'INSERT INTO activity_logs (user_id, booking_id, action, details) '
+            'VALUES (%s, %s, %s, %s)',
+            (user_id, booking_id, 'RESTORE',
+             f'Restored booking #{booking_id} from Trash')
+        )
+
+        conn.commit()
+        return jsonify(
+            message='Booking restored successfully.',
+            booking_id=booking_id
+        ), 200
+
+    except Exception:
+        if conn is not None:
+            try:
+                conn.rollback()
+            except Exception:
+                current_app.logger.exception(
+                    'Could not roll back failed Restore operation.'
+                )
+        current_app.logger.exception('Could not restore booking.')
+        return jsonify(
+            error='Could not restore booking. Please try again.'
+        ), 500
+
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                current_app.logger.exception('Could not close database cursor.')
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                current_app.logger.exception('Could not close database connection.')

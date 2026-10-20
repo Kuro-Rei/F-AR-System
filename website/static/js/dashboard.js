@@ -36,7 +36,7 @@ function rowHtml(r) {
 
     return `
         <tr>
-            <td><input type="checkbox" aria-label="Select record ${r.booking_id}" /></td>
+            <td><input type="checkbox" aria-label="Select record ${r.id}" /></td>
             <td class="muted">${fmtDate(r.date)}</td>
             <td><strong>${esc(r.location)}</strong></td>
             <td>${r.count === null ? '—' : r.count}</td>
@@ -44,7 +44,7 @@ function rowHtml(r) {
             <td>${fmtNum(volume)}</td>
             <td>${fmtMoney(r.price)}</td>
             <td class="num">
-                <button class="icon-btn" aria-label="Delete record ${r.booking_id}">
+                <button class="icon-btn" data-booking-id="${r.id}" aria-label="Delete record ${r.id}">
                     <i class="i fa-solid fa-trash-can"></i><span>Delete</span>
                 </button>
             </td>
@@ -113,22 +113,64 @@ selectAll.addEventListener('change', () => {
 });
 
 // delete
-ledgerBody.addEventListener('click', e => {
+ledgerBody.addEventListener('click', async e => {
     const btn = e.target.closest('.icon-btn');
 
-    if (!btn) return;
+    if (!btn || btn.disabled) return;
 
     const row = btn.closest('tr');
     const name = row.querySelector('strong').textContent;
+    const bookingId = btn.dataset.bookingId;
+
+    if (!bookingId) {
+        showToast('Could not identify this booking. Please refresh and try again.');
+        return;
+    }
 
     if (!confirm('Move ' + name + ' to trash?')) return;
 
-    row.remove();
-    totalRecords--;
-    updateFooter();
+    btn.disabled = true;
 
-    addLog('Delete', 'Moved ' + name + ' to trash');
-    showToast(name + ' moved to trash');
+    try {
+        const res = await fetch(
+            '/api/records/' + encodeURIComponent(bookingId) + '/trash',
+            { method: 'POST' }
+        );
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (parseError) {
+            // A non-JSON server response is handled below using the HTTP status.
+        }
+
+        if (!res.ok) {
+            throw new Error(data.error || 'Could not move this booking to Trash.');
+        }
+
+        row.remove();
+        totalRecords = Math.max(0, totalRecords - 1);
+        updateFooter();
+
+        if (currentPage > 1 && !ledgerRows().some(r => r.querySelector('input[type="checkbox"]'))) {
+            currentPage--;
+        }
+
+        addLog('Delete', 'Moved ' + name + ' to trash');
+        showToast(name + ' moved to trash');
+
+        await loadRecords();
+        if (typeof window.reloadDashboard === 'function') {
+            try {
+                await window.reloadDashboard();
+            } catch (refreshError) {
+                console.error('Could not refresh dashboard charts:', refreshError);
+                showToast('Record moved to Trash, but the dashboard could not refresh.');
+            }
+        }
+    } catch (err) {
+        btn.disabled = false;
+        showToast(err.message || 'Could not move this booking to Trash. Please try again.');
+    }
 });
 
 
