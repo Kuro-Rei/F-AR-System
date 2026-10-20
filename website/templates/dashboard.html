@@ -1,241 +1,121 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Dashboard | Andrei Rain Salt Dealer{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-    <link rel="stylesheet" href = "{{ url_for('static', filename='css/asin.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
-  </head>
-  <body>
-    <div class="app">
-      <aside class="sidebar">
-        <div class="brand company-brand">
-          <img
-            class="company-logo"
-            src="{{ url_for('static', filename='assets/andrei-rain-logo.png') }}"
-            alt="Andrei Rain Salt Dealer"
-          />
-        </div>
-        <p class="nav-label">Sales management</p>
-        <nav class="nav">
-          <a href="{{ url_for('views.dashboard') }}" class="nav-link active"
-            ><i class="i fa-solid fa-table-cells-large"></i>Dashboard</a
-          >
-          <a href="{{ url_for('views.reports') }}" class="nav-link"
-            ><i class="i fa-solid fa-chart-column"></i>Reports</a
-          >
-          <a href="{{ url_for('views.trash') }}" class="nav-link"
-            ><i class="i fa-solid fa-trash-can"></i>Trash</a
-          >
-          <a href="{{ url_for('views.logs') }}" class="nav-link"><i class="i fa-solid fa-list"></i>Logs</a>
-        </nav>
-      </aside>
-      <main>
-        <header class="topbar">
-          <div><b>Dashboard</b><span class="sep">›</span>Overview</div>
-          <div class="topbar-actions">
-            <span class="period-tag">Q3 2026</span>
-            <div class="account-menu">
-              <button
-                class="account-trigger"
-                type="button"
-                aria-label="Open account menu"
-                aria-haspopup="true"
-                aria-expanded="false"
-                id="account-trigger"
-              >
-                <span class="account-avatar" data-profile-initials>K</span>
-              </button>
-              <div class="account-dropdown" id="account-dropdown" hidden>
-                <div class="account-info">
-                  <strong data-profile-name>Kurt</strong
-                  ><small data-profile-role>Sales manager</small>
-                </div>
-                <a href="{{ url_for('views.profile') }}" class="account-option"
-                  ><i class="i fa-solid fa-user"></i> My Profile</a
-                ><button
-                  type="button"
-                  class="account-option account-logout"
-                  id="logout-trigger"
-                >
-                  <span class="logout-symbol" aria-hidden="true">↪</span> Log
-                  out
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-        <div class="content">
-          <div class="page-head">
-            <div>
-              <h1>Welcome back, Kurt</h1>
-              <p>
-                Here's what's happening across your salt trading sales
-                workspace.
-              </p>
-            </div>
-            <div class="dashboard-head-actions">
-              <small>Thursday, October 15, 2026</small
-              ><button class="btn btn-primary" id="import-btn" type="button">
-                <i class="i fa-solid fa-upload"></i>Import Excel</button
-              ><input
-                type="file"
-                id="import-file"
-                accept=".xlsx,.xls,.csv,.xlsm"
-                hidden
-              />
-            </div>
-          </div>
+{% extends "base.html" %}
 
-          <section
-            class="card excel-filter-card"
-            aria-label="Sales dashboard filters"
-          >
-            <div class="card-head">
-              <div>
-                <h2>Sales performance filters</h2>
-                <p>
-                  All KPIs and charts update automatically when filters change.
-                </p>
-              </div>
-              <button
-                type="button"
-                class="filter-reset"
-                id="reset-dashboard-filters"
-              >
-                Reset filters
-              </button>
-            </div>
-            <div class="excel-filters">
-              <label>Date from<input id="filter-from" type="date" /></label>
-              <label>Date to<input id="filter-to" type="date" /></label>
-              <label>Location<select id="filter-location"></select></label>
+{% block title %}Dashboard | Andrei Rain Salt Dealer{% endblock %}
 
-            </div>
-            <p class="filter-note" id="filter-note" aria-live="polite"></p>
-          </section>
-          <section class="excel-kpis">
-            <article class="card kpi">
-              <span>Total sales</span><strong id="kpi-sales">—</strong
-              ><small>Filtered sales revenue</small>
-            </article>
-            <article class="card kpi">
-              <span>Total volume sold</span><strong id="kpi-volume">—</strong
-              ><small>Total kilograms sold</small>
-            </article>
-            <article class="card kpi">
-              <span>Average price / kg</span><strong id="kpi-average">—</strong
-              ><small>Sales ÷ total volume</small>
-            </article>
-            <article class="card kpi">
-              <span>Matching sales records</span
-              ><strong id="kpi-records">—</strong
-              ><small>Records meeting all filters</small>
-            </article>
-          </section>
-          <section class="excel-charts">
-            <article class="card">
-              <h2>Daily Sales Trend</h2>
-              <p>Sales revenue by date</p>
-              <div
-                id="chart-sales"
-                class="excel-chart"
-                role="img"
-                aria-label="Daily sales line chart"
-              ></div>
-            </article>
-            <article class="card">
-              <h2>Top 10 Locations by Sales</h2>
-              <p>Locations ranked by sales revenue</p>
-              <div
-                id="chart-location"
-                class="excel-chart"
-                role="img"
-                aria-label="Top ten locations horizontal bar chart"
-              ></div>
-            </article>
-            <article class="card volume-chart-card">
-              <h2>Daily Volume Sold (Kg)</h2>
-              <p>Kilograms sold by date</p>
-              <div
-                id="chart-volume"
-                class="excel-chart"
-                role="img"
-                aria-label="Daily volume column chart"
-              ></div>
-            </article>
-          </section>
-          <section class="card">
-            <div class="card-head">
-              <div>
-                <h2>Ledger records</h2>
-                <p>The latest additions to your sales management workspace.</p>
-              </div>
-            </div>
-            <div class="toolbar">
-              <label class="search"
-                ><i class="i fa-solid fa-magnifying-glass"></i
-                ><input
-                  type="search"
-                  id="ledger-search"
-                  placeholder="Search by location or date (2026-09-05)..."
-              /></label>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th class="th-check">
-                      <input type="checkbox" id="select-all" aria-label="Select all" />
-                    </th>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Count</th>
-                    <th>Size (kg)</th>
-                    <th>Total volume (kg)</th>
-                    <th>Price</th>
-                    <th class="num">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="ledger-body"></tbody>
-              </table>
-            </div>
-            <div class="table-foot">
-              <span id="ledger-foot">Showing 0 of 0 records</span>
-              <div class="pager" id="ledger-pager"></div>
-            </div>
-          </section>
-        </div>
-      </main>
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+{% endblock %}
+
+{% block breadcrumb %}<b>Dashboard</b><span class="sep">›</span>Overview{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Welcome back, Kurt</h1>
+    <p>
+      Here's what's happening across your salt trading sales
+      workspace.
+    </p>
+  </div>
+  <div class="dashboard-head-actions">
+    <small>Thursday, October 15, 2026</small>
+    <button class="btn btn-primary" id="import-btn" type="button">
+      <i class="i fa-solid fa-upload"></i>Import Excel</button><input type="file" id="import-file"
+      accept=".xlsx,.xls,.csv,.xlsm" hidden />
+  </div>
+</div>
+
+<section class="card excel-filter-card" aria-label="Sales dashboard filters">
+  <div class="card-head">
+    <div>
+      <h2>Sales performance filters</h2>
+      <p>
+        All KPIs and charts update automatically when filters change.
+      </p>
     </div>
-    <script src="{{ url_for('static', filename='js/sige.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/profile-shared.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-    <!-- <script src="{{ url_for('static', filename='js/excel-dashboard-data.js') }}"></script> -->
-    <script src="{{ url_for('static', filename='js/excel-dashboard.js') }}"></script>
-    <div class="logout-overlay" id="logout-overlay" hidden>
-      <section
-        class="logout-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="logout-title"
-        aria-describedby="logout-description"
-      >
-        <div class="logout-dialog-icon">↪</div>
-        <h2 id="logout-title">Log out of your account?</h2>
-        <p id="logout-description">
-          Are you sure you want to log out? You will return to the login page.
-        </p>
-        <div class="logout-dialog-actions">
-          <button type="button" class="btn" id="logout-cancel">Cancel</button
-          ><button type="button" class="btn btn-primary" id="logout-confirm">
-            Yes, log out
-          </button>
-        </div>
-      </section>
+    <button type="button" class="filter-reset" id="reset-dashboard-filters">
+      Reset filters
+    </button>
+  </div>
+  <div class="excel-filters">
+    <label>Date from<input id="filter-from" type="date" /></label>
+    <label>Date to<input id="filter-to" type="date" /></label>
+    <label>Location<select id="filter-location"></select></label>
+  </div>
+  <p class="filter-note" id="filter-note" aria-live="polite"></p>
+</section>
+
+<section class="excel-kpis">
+  <article class="card kpi">
+    <span>Total sales</span><strong id="kpi-sales">—</strong><small>Filtered sales revenue</small>
+  </article>
+  <article class="card kpi">
+    <span>Total volume sold</span><strong id="kpi-volume">—</strong><small>Total kilograms sold</small>
+  </article>
+  <article class="card kpi">
+    <span>Average price / kg</span><strong id="kpi-average">—</strong><small>Sales ÷ total volume</small>
+  </article>
+  <article class="card kpi">
+    <span>Matching sales records</span><strong id="kpi-records">—</strong><small>Records meeting all filters</small>
+  </article>
+</section>
+
+<section class="excel-charts">
+  <article class="card">
+    <h2>Daily Sales Trend</h2>
+    <p>Sales revenue by date</p>
+    <div id="chart-sales" class="excel-chart" role="img" aria-label="Daily sales line chart"></div>
+  </article>
+  <article class="card">
+    <h2>Top 10 Locations by Sales</h2>
+    <p>Locations ranked by sales revenue</p>
+    <div id="chart-location" class="excel-chart" role="img" aria-label="Top ten locations horizontal bar chart"></div>
+  </article>
+  <article class="card volume-chart-card">
+    <h2>Daily Volume Sold (Kg)</h2>
+    <p>Kilograms sold by date</p>
+    <div id="chart-volume" class="excel-chart" role="img" aria-label="Daily volume column chart"></div>
+  </article>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <div>
+      <h2>Ledger records</h2>
+      <p>The latest additions to your sales management workspace.</p>
     </div>
-    <script src="{{ url_for('static', filename='js/account-menu.js') }}"></script>
-  </body>
-</html>
+  </div>
+  <div class="toolbar">
+    <label class="search"><i class="i fa-solid fa-magnifying-glass"></i><input type="search" id="ledger-search"
+        placeholder="Search by location or date (2026-09-05)..." /></label>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="th-check">
+            <input type="checkbox" id="select-all" aria-label="Select all" />
+          </th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Count</th>
+          <th>Size (kg)</th>
+          <th>Total volume (kg)</th>
+          <th>Price</th>
+          <th class="num">Action</th>
+        </tr>
+      </thead>
+      <tbody id="ledger-body"></tbody>
+    </table>
+  </div>
+  <div class="table-foot">
+    <span id="ledger-foot">Showing 0 of 0 records</span>
+    <div class="pager" id="ledger-pager"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/excel-dashboard.js') }}"></script>
+{% endblock %}

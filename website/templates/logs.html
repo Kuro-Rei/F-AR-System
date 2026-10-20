@@ -1,189 +1,105 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Logs | Andrei Rain Salt Dealer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/asin.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/logs.css') }}" />
-  </head>
-  <body>
-    <div class="app">
-      <aside class="sidebar">
-        <div class="brand company-brand">
-          <img
-            class="company-logo"
-            src="{{ url_for('static', filename='assets/andrei-rain-logo.png') }}"
-            alt="Andrei Rain Salt Dealer"
-          />
-        </div>
-        <p class="nav-label">Sales management</p>
-        <nav class="nav">
-          <a href="{{ url_for('views.dashboard') }}" class="nav-link"
-            ><i class="i fa-solid fa-table-cells-large"></i>Dashboard</a
-          >
-          <a href="{{ url_for('views.reports') }}" class="nav-link"
-            ><i class="i fa-solid fa-chart-column"></i>Reports</a
-          >
-          <a href="{{ url_for('views.trash') }}" class="nav-link"
-            ><i class="i fa-solid fa-trash-can"></i>Trash</a
-          >
-          <a href="{{ url_for('views.logs') }}" class="nav-link active"><i class="i fa-solid fa-list"></i>Logs</a>
-        </nav>
-      </aside>
-      <main>
-        <header class="topbar">
-          <div><b>Logs</b><span class="sep">›</span>Activity history</div>
-          <div class="topbar-actions">
-            <span class="period-tag">Q3 2026</span>
-            <div class="account-menu">
-              <button
-                class="account-trigger"
-                type="button"
-                aria-label="Open account menu"
-                aria-haspopup="true"
-                aria-expanded="false"
-                id="account-trigger"
-              >
-                <span class="account-avatar" data-profile-initials>K</span>
-              </button>
-              <div class="account-dropdown" id="account-dropdown" hidden>
-                <div class="account-info">
-                  <strong data-profile-name>Kurt</strong
-                  ><small data-profile-role>Sales manager</small>
-                </div>
-                <a href="{{ url_for('views.profile') }}" class="account-option"
-                  ><i class="i fa-solid fa-user"></i> My Profile</a
-                ><button
-                  type="button"
-                  class="account-option account-logout"
-                  id="logout-trigger"
-                >
-                  <span class="logout-symbol" aria-hidden="true">↪</span> Log
-                  out
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-        <div class="content">
-          <div class="page-head">
-            <div>
-              <h1>Logs</h1>
-              <p>Every login and change made in the workspace.</p>
-            </div>
-          </div>
+{% extends "base.html" %}
 
-          <section class="card">
-            <div class="toolbar logs-toolbar">
-              <div class="chips">
-                <button class="chip active" type="button" data-filter="all">
-                  All</button
-                ><button class="chip" type="button" data-filter="login">
-                  Login</button
-                ><button class="chip" type="button" data-filter="delete">
-                  Delete</button
-                ><button class="chip" type="button" data-filter="restore">
-                  Restore</button
-                ><button
-                  class="chip"
-                  type="button"
-                  data-filter="imported excel"
-                >
-                  Imported excel
-                </button>
-              </div>
-              <label class="search"
-                ><i class="i fa-solid fa-magnifying-glass"></i
-                ><input
-                  type="search"
-                  id="log-search"
-                  placeholder="Search logs..."
-              /></label>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date and time</th>
-                    <th>User</th>
-                    <th>Action</th>
-                    <th>Details</th>
-                  </tr>
-                </thead>
-                <tbody id="log-body">
-                  <tr>
-                    <td class="muted">Oct 15, 2026 · 9:41 AM</td>
-                    <td>Kurt</td>
-                    <td><span class="tag tag-blue">Login</span></td>
-                    <td>Signed in from Chrome on Windows</td>
-                  </tr>
-                  <tr>
-                    <td class="muted">Oct 15, 2026 · 9:12 AM</td>
-                    <td>Kurt</td>
-                    <td><span class="tag tag-red">Delete</span></td>
-                    <td>Moved Page 12 (24 records) to trash</td>
-                  </tr>
-                  <tr>
-                    <td class="muted">Oct 15, 2026 · 9:10 AM</td>
-                    <td>Kurt</td>
-                    <td><span class="tag tag-red">Delete</span></td>
-                    <td>Moved Page 11 (18 records) to trash</td>
-                  </tr>
-                  <tr>
-                    <td class="muted">Oct 14, 2026 · 4:45 PM</td>
-                    <td>Denise Rain</td>
-                    <td><span class="tag tag-green">Restore</span></td>
-                    <td>Restored Page 09 (15 records)</td>
-                  </tr>
-                  <tr>
-                    <td class="muted">Oct 14, 2026 · 2:20 PM</td>
-                    <td>Denise Rain</td>
-                    <td><span class="tag tag-violet">Imported excel</span></td>
-                    <td>Imported sales-october.xlsx (124 rows)</td>
-                  </tr>
-                  <tr>
-                    <td class="muted">Oct 14, 2026 · 8:55 AM</td>
-                    <td>Denise Rain</td>
-                    <td><span class="tag tag-blue">Login</span></td>
-                    <td>Signed in from Safari on iPhone</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="table-foot">
-              <span id="log-foot"></span>
-              <div class="pager" id="pager"></div>
-            </div>
-          </section>
-        </div>
-      </main>
-    </div>
-    <script src="{{ url_for('static', filename='js/sige.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/profile-shared.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/logs.js') }}"></script>
-    <div class="logout-overlay" id="logout-overlay" hidden>
-      <section
-        class="logout-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="logout-title"
-        aria-describedby="logout-description"
+{% block title %}Logs | Andrei Rain Salt Dealer{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/logs.css') }}" />
+{% endblock %}
+
+{% block breadcrumb %}<b>Logs</b><span class="sep">›</span>Activity history{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Logs</h1>
+    <p>Every login and change made in the workspace.</p>
+  </div>
+</div>
+
+<section class="card">
+  <div class="toolbar logs-toolbar">
+    <div class="chips">
+      <button class="chip active" type="button" data-filter="all">
+        All</button
+      ><button class="chip" type="button" data-filter="login">
+        Login</button
+      ><button class="chip" type="button" data-filter="delete">
+        Delete</button
+      ><button class="chip" type="button" data-filter="restore">
+        Restore</button
+      ><button
+        class="chip"
+        type="button"
+        data-filter="imported excel"
       >
-        <div class="logout-dialog-icon">↪</div>
-        <h2 id="logout-title">Log out of your account?</h2>
-        <p id="logout-description">
-          Are you sure you want to log out? You will return to the login page.
-        </p>
-        <div class="logout-dialog-actions">
-          <button type="button" class="btn" id="logout-cancel">Cancel</button
-          ><button type="button" class="btn btn-primary" id="logout-confirm">
-            Yes, log out
-          </button>
-        </div>
-      </section>
+        Imported excel
+      </button>
     </div>
-    <script src="{{ url_for('static', filename='js/account-menu.js') }}"></script>
-  </body>
-</html>
+    <label class="search"
+      ><i class="i fa-solid fa-magnifying-glass"></i
+      ><input
+        type="search"
+        id="log-search"
+        placeholder="Search logs..."
+    /></label>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date and time</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="log-body">
+        <tr>
+          <td class="muted">Oct 15, 2026 · 9:41 AM</td>
+          <td>Kurt</td>
+          <td><span class="tag tag-blue">Login</span></td>
+          <td>Signed in from Chrome on Windows</td>
+        </tr>
+        <tr>
+          <td class="muted">Oct 15, 2026 · 9:12 AM</td>
+          <td>Kurt</td>
+          <td><span class="tag tag-red">Delete</span></td>
+          <td>Moved Page 12 (24 records) to trash</td>
+        </tr>
+        <tr>
+          <td class="muted">Oct 15, 2026 · 9:10 AM</td>
+          <td>Kurt</td>
+          <td><span class="tag tag-red">Delete</span></td>
+          <td>Moved Page 11 (18 records) to trash</td>
+        </tr>
+        <tr>
+          <td class="muted">Oct 14, 2026 · 4:45 PM</td>
+          <td>Denise Rain</td>
+          <td><span class="tag tag-green">Restore</span></td>
+          <td>Restored Page 09 (15 records)</td>
+        </tr>
+        <tr>
+          <td class="muted">Oct 14, 2026 · 2:20 PM</td>
+          <td>Denise Rain</td>
+          <td><span class="tag tag-violet">Imported excel</span></td>
+          <td>Imported sales-october.xlsx (124 rows)</td>
+        </tr>
+        <tr>
+          <td class="muted">Oct 14, 2026 · 8:55 AM</td>
+          <td>Denise Rain</td>
+          <td><span class="tag tag-blue">Login</span></td>
+          <td>Signed in from Safari on iPhone</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-foot">
+    <span id="log-foot"></span>
+    <div class="pager" id="pager"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/logs.js') }}"></script>
+{% endblock %}

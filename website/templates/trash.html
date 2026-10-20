@@ -1,263 +1,132 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Trash | Andrei Rain Salt Dealer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/asin.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/trash.css') }}" />
-  </head>
-  <body>
-    <div class="app">
-      <aside class="sidebar">
-        <div class="brand company-brand">
-          <img
-            class="company-logo"
-            src="{{ url_for('static', filename='assets/andrei-rain-logo.png') }}"
-            alt="Andrei Rain Salt Dealer"
-          />
-        </div>
-        <p class="nav-label">Sales management</p>
-        <nav class="nav">
-          <a href="{{ url_for('views.dashboard') }}" class="nav-link"
-            ><i class="i fa-solid fa-table-cells-large"></i>Dashboard</a
-          >
-          <a href="{{ url_for('views.reports') }}" class="nav-link"
-            ><i class="i fa-solid fa-chart-column"></i>Reports</a
-          >
-          <a href="{{ url_for('views.trash') }}" class="nav-link active"
-            ><i class="i fa-solid fa-trash-can"></i>Trash</a
-          >
-          <a href="{{ url_for('views.logs') }}" class="nav-link"><i class="i fa-solid fa-list"></i>Logs</a>
-        </nav>
-      </aside>
-      <main>
-        <header class="topbar">
-          <div><b>Trash</b><span class="sep">›</span>Deleted records</div>
-          <div class="topbar-actions">
-            <span class="period-tag">Q3 2026</span>
-            <div class="account-menu">
-              <button
-                class="account-trigger"
-                type="button"
-                aria-label="Open account menu"
-                aria-haspopup="true"
-                aria-expanded="false"
-                id="account-trigger"
-              >
-                <span class="account-avatar" data-profile-initials>K</span>
-              </button>
-              <div class="account-dropdown" id="account-dropdown" hidden>
-                <div class="account-info">
-                  <strong data-profile-name>Kurt</strong
-                  ><small data-profile-role>Sales manager</small>
-                </div>
-                <a href="{{ url_for('views.profile') }}" class="account-option"
-                  ><i class="i fa-solid fa-user"></i> My Profile</a
-                ><button
-                  type="button"
-                  class="account-option account-logout"
-                  id="logout-trigger"
-                >
-                  <span class="logout-symbol" aria-hidden="true">↪</span> Log
-                  out
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-        <div class="content">
-          <div class="page-head">
-            <div>
-              <h1>Trash</h1>
-              <p>Delete mo 'to tsaka yan tapos restore mo, okay?</p>
-            </div>
-            <button class="btn" id="restore-all" type="button">
-              <i class="i fa-solid fa-rotate-left"></i>Restore all
-            </button>
-          </div>
+{% extends "base.html" %}
 
-          <section class="card has-trash">
-            <div class="card-head">
-              <div>
-                <h2>deleted records nganiii</h2>
-                <p id="trash-count">5 items in trash</p>
-              </div>
-            </div>
-            <div class="toolbar">
-              <label class="search"
-                ><i class="i fa-solid fa-magnifying-glass"></i
-                ><input
-                  type="search"
-                  id="trash-search"
-                  placeholder="Search deleted records..."
-              /></label>
-            </div>
-            <div class="bulk-bar">
-              <span><b id="selected-count">0</b> selected</span>
-              <div class="bulk-actions">
-                <button
-                  class="btn btn-primary"
-                  id="restore-selected"
-                  type="button"
-                >
-                  <i class="i fa-solid fa-rotate-left"></i>Restore selected
-                </button>
-                <button
-                  class="btn btn-ghost"
-                  id="clear-selection"
-                  type="button"
-                >
-                  Clear
-                </button>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th class="th-check">
-                      <input
-                        type="checkbox"
-                        id="select-all"
-                        aria-label="Select all"
-                      />
-                    </th>
-                    <th>Page</th>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th class="num">Count</th>
-                    <th>Size</th>
-                    <th class="num">Price</th>
-                    <th>Deleted by</th>
-                    <th>Deleted at</th>
-                  </tr>
-                </thead>
-                <tbody id="trash-body">
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        class="row-check"
-                        aria-label="Select Page 12"
-                      />
-                    </td>
-                    <td>Page 12</td>
-                    <td class="muted">Oct 14, 2026</td>
-                    <td>dyan lang sa gedli</td>
-                    <td class="num">24</td>
-                    <td class="muted">18 KB</td>
-                    <td class="num">₱9,600</td>
-                    <td>Sharmain</td>
-                    <td class="muted">Oct 15, 9:12 AM</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        class="row-check"
-                        aria-label="Select Page 11"
-                      />
-                    </td>
-                    <td>Page 11</td>
-                    <td class="muted">Oct 13, 2026</td>
-                    <td>IT Building</td>
-                    <td class="num">18</td>
-                    <td class="muted">14 KB</td>
-                    <td class="num">₱7,200</td>
-                    <td>Erica</td>
-                    <td class="muted">Oct 15, 9:10 AM</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        class="row-check"
-                        aria-label="Select Page 08"
-                      />
-                    </td>
-                    <td>Page 08</td>
-                    <td class="muted">Oct 10, 2026</td>
-                    <td>Bsu Gate 1</td>
-                    <td class="num">31</td>
-                    <td class="muted">22 KB</td>
-                    <td class="num">₱12,400</td>
-                    <td>Aaron</td>
-                    <td class="muted">Oct 14, 4:30 PM</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        class="row-check"
-                        aria-label="Select Page 05"
-                      />
-                    </td>
-                    <td>Page 05</td>
-                    <td class="muted">Oct 07, 2026</td>
-                    <td>AVR A</td>
-                    <td class="num">12</td>
-                    <td class="muted">9 KB</td>
-                    <td class="num">₱4,800</td>
-                    <td>Kurt</td>
-                    <td class="muted">Oct 13, 1:05 PM</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <input
-                        type="checkbox"
-                        class="row-check"
-                        aria-label="Select Page 02"
-                      />
-                    </td>
-                    <td>Page 02</td>
-                    <td class="muted">Oct 03, 2026</td>
-                    <td>IT 203</td>
-                    <td class="num">9</td>
-                    <td class="muted">7 KB</td>
-                    <td class="num">₱3,600</td>
-                    <td>Denise Rain</td>
-                    <td class="muted">Oct 12, 10:48 AM</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="empty">
-              <h2>Trash is empty</h2>
-              <p>Deleted records will show up here so you can restore them.</p>
-            </div>
-            <div class="table-foot">
-              <span id="trash-foot">Showing 5 of 5 records</span>
-            </div>
-          </section>
-        </div>
-      </main>
+{% block title %}Trash | Andrei Rain Salt Dealer{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/trash.css') }}" />
+{% endblock %}
+
+{% block breadcrumb %}<b>Trash</b><span class="sep">›</span>Deleted records{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Trash</h1>
+    <p>Delete mo 'to tsaka yan tapos restore mo, okay?</p>
+  </div>
+  <button class="btn" id="restore-all" type="button">
+    <i class="i fa-solid fa-rotate-left"></i>Restore all
+  </button>
+</div>
+
+<section class="card has-trash">
+  <div class="card-head">
+    <div>
+      <h2>deleted records nganiii</h2>
+      <p id="trash-count">5 items in trash</p>
     </div>
-    <script src="{{ url_for('static', filename='js/sige.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/profile-shared.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/trash.js') }}"></script>
-    <div class="logout-overlay" id="logout-overlay" hidden>
-      <section
-        class="logout-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="logout-title"
-        aria-describedby="logout-description"
-      >
-        <div class="logout-dialog-icon">↪</div>
-        <h2 id="logout-title">Log out of your account?</h2>
-        <p id="logout-description">
-          Are you sure you want to log out? You will return to the login page.
-        </p>
-        <div class="logout-dialog-actions">
-          <button type="button" class="btn" id="logout-cancel">Cancel</button
-          ><button type="button" class="btn btn-primary" id="logout-confirm">
-            Yes, log out
-          </button>
-        </div>
-      </section>
+  </div>
+  <div class="toolbar">
+    <label class="search"><i class="i fa-solid fa-magnifying-glass"></i><input type="search" id="trash-search"
+        placeholder="Search deleted records..." /></label>
+  </div>
+  <div class="bulk-bar">
+    <span><b id="selected-count">0</b> selected</span>
+    <div class="bulk-actions">
+      <button class="btn btn-primary" id="restore-selected" type="button">
+        <i class="i fa-solid fa-rotate-left"></i>Restore selected
+      </button>
+      <button class="btn btn-ghost" id="clear-selection" type="button">
+        Clear
+      </button>
     </div>
-    <script src="{{ url_for('static', filename='js/account-menu.js') }}"></script>
-  </body>
-</html>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="th-check">
+            <input type="checkbox" id="select-all" aria-label="Select all" />
+          </th>
+          <th>Page</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th class="num">Count</th>
+          <th>Size</th>
+          <th class="num">Price</th>
+          <th>Deleted by</th>
+          <th>Deleted at</th>
+        </tr>
+      </thead>
+      <tbody id="trash-body">
+        <tr>
+          <td><input type="checkbox" class="row-check" aria-label="Select Page 12" /></td>
+          <td>Page 12</td>
+          <td class="muted">Oct 14, 2026</td>
+          <td>dyan lang sa gedli</td>
+          <td class="num">24</td>
+          <td class="muted">18 KB</td>
+          <td class="num">₱9,600</td>
+          <td>Sharmain</td>
+          <td class="muted">Oct 15, 9:12 AM</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="row-check" aria-label="Select Page 11" /></td>
+          <td>Page 11</td>
+          <td class="muted">Oct 13, 2026</td>
+          <td>IT Building</td>
+          <td class="num">18</td>
+          <td class="muted">14 KB</td>
+          <td class="num">₱7,200</td>
+          <td>Erica</td>
+          <td class="muted">Oct 15, 9:10 AM</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="row-check" aria-label="Select Page 08" /></td>
+          <td>Page 08</td>
+          <td class="muted">Oct 10, 2026</td>
+          <td>Bsu Gate 1</td>
+          <td class="num">31</td>
+          <td class="muted">22 KB</td>
+          <td class="num">₱12,400</td>
+          <td>Aaron</td>
+          <td class="muted">Oct 14, 4:30 PM</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="row-check" aria-label="Select Page 05" /></td>
+          <td>Page 05</td>
+          <td class="muted">Oct 07, 2026</td>
+          <td>AVR A</td>
+          <td class="num">12</td>
+          <td class="muted">9 KB</td>
+          <td class="num">₱4,800</td>
+          <td>Kurt</td>
+          <td class="muted">Oct 13, 1:05 PM</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" class="row-check" aria-label="Select Page 02" /></td>
+          <td>Page 02</td>
+          <td class="muted">Oct 03, 2026</td>
+          <td>IT 203</td>
+          <td class="num">9</td>
+          <td class="muted">7 KB</td>
+          <td class="num">₱3,600</td>
+          <td>Denise Rain</td>
+          <td class="muted">Oct 12, 10:48 AM</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="empty">
+    <h2>Trash is empty</h2>
+    <p>Deleted records will show up here so you can restore them.</p>
+  </div>
+  <div class="table-foot">
+    <span id="trash-foot">Showing 5 of 5 records</span>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/trash.js') }}"></script>
+{% endblock %}
