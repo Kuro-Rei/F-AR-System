@@ -40,6 +40,7 @@
             <i class="i fa-solid fa-lock"></i><input id="pass" name = "password"type="password" placeholder="Enter your password" />
           </div>
         </div>
+        <label class="show-pass"><input type="checkbox" id="show-pass" /> Show password</label>
         <div class="row-between">
           <label><input type="checkbox" /> Remember me</label><a href="#" class="link">Forgot password?</a>
         </div>
@@ -76,6 +77,11 @@
       </div>
     </section>
   </div>
+  <script>
+    document.getElementById('show-pass').addEventListener('change', function () {
+      document.getElementById('pass').type = this.checked ? 'text' : 'password';
+    });
+  </script>
 </body>
 
 </html>

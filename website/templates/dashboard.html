@@ -8,6 +8,14 @@
 
 {% block breadcrumb %}<b>Dashboard</b><span class="sep">›</span>Overview{% endblock %}
 
+{% block sidebar_extra %}
+<div class="sidebar-import">
+  <button class="btn btn-primary" id="import-btn" type="button">
+    <i class="i fa-solid fa-upload"></i>Import Excel</button><input type="file" id="import-file"
+    accept=".xlsx,.xls,.csv,.xlsm" hidden />
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="page-head">
   <div>
@@ -19,9 +27,6 @@
   </div>
   <div class="dashboard-head-actions">
     <small>Thursday, October 15, 2026</small>
-    <button class="btn btn-primary" id="import-btn" type="button">
-      <i class="i fa-solid fa-upload"></i>Import Excel</button><input type="file" id="import-file"
-      accept=".xlsx,.xls,.csv,.xlsm" hidden />
   </div>
 </div>
 
@@ -47,34 +52,31 @@
 
 <section class="excel-kpis">
   <article class="card kpi">
-    <span>Total sales</span><strong id="kpi-sales">—</strong><small>Filtered sales revenue</small>
+    <span>Total sales</span><strong id="kpi-sales">—</strong><small id="kpi-sales-note">—</small>
   </article>
   <article class="card kpi">
-    <span>Total volume sold</span><strong id="kpi-volume">—</strong><small>Total kilograms sold</small>
+    <span>Total volume sold</span><strong id="kpi-volume">—</strong><small id="kpi-volume-note">—</small>
   </article>
   <article class="card kpi">
-    <span>Average price / kg</span><strong id="kpi-average">—</strong><small>Sales ÷ total volume</small>
-  </article>
-  <article class="card kpi">
-    <span>Matching sales records</span><strong id="kpi-records">—</strong><small>Records meeting all filters</small>
+    <span>Average sales</span><strong id="kpi-average">—</strong><small id="kpi-average-note">—</small>
   </article>
 </section>
 
 <section class="excel-charts">
-  <article class="card">
-    <h2>Daily Sales Trend</h2>
-    <p>Sales revenue by date</p>
-    <div id="chart-sales" class="excel-chart" role="img" aria-label="Daily sales line chart"></div>
-  </article>
-  <article class="card">
-    <h2>Top 10 Locations by Sales</h2>
-    <p>Locations ranked by sales revenue</p>
-    <div id="chart-location" class="excel-chart" role="img" aria-label="Top ten locations horizontal bar chart"></div>
-  </article>
   <article class="card volume-chart-card">
-    <h2>Daily Volume Sold (Kg)</h2>
-    <p>Kilograms sold by date</p>
-    <div id="chart-volume" class="excel-chart" role="img" aria-label="Daily volume column chart"></div>
+    <h2>Weekly Sales Trend</h2>
+    <p>Sales revenue by week</p>
+    <div id="chart-sales" class="excel-chart" role="img" aria-label="Weekly sales line chart"></div>
+  </article>
+  <article class="card">
+    <h2>Weekly Volume Sold (Kg)</h2>
+    <p>Kilograms sold by week</p>
+    <div id="chart-volume" class="excel-chart" role="img" aria-label="Weekly volume column chart"></div>
+  </article>
+  <article class="card">
+    <h2>Top 10 Location by Volume</h2>
+    <p>Locations ranked by kilograms sold</p>
+    <div id="chart-location" class="excel-chart" role="img" aria-label="Top ten locations by volume horizontal bar chart"></div>
   </article>
 </section>
 
@@ -88,6 +90,9 @@
   <div class="toolbar">
     <label class="search"><i class="i fa-solid fa-magnifying-glass"></i><input type="search" id="ledger-search"
         placeholder="Search by location or date (2026-09-05)..." /></label>
+    <button class="btn btn-primary" id="archive-selected" type="button" hidden>
+      <i class="i fa-solid fa-box-archive"></i>Archive selected (<span id="archive-selected-count">0</span>)
+    </button>
   </div>
   <div class="table-wrap">
     <table>
