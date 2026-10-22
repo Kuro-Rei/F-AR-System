@@ -18,6 +18,13 @@ def login():
             user = cur.fetchone()
 
             if user and check_password_hash(user['password_hash'], password):
+
+                # Remember Me 
+                remember = request.form.get('remember') == 'on'
+                session.clear()
+                session.permanent = remember
+
+
                 session['user_id'] = user['user_id']
                 session['full_name'] = user['full_name']
                 session['role'] = user['role']
