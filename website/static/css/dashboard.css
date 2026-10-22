@@ -267,3 +267,17 @@
 
 .excel-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 580px) { .excel-filters { grid-template-columns: 1fr; } }
+
+
+.btn[hidden] { display: none; }
+.icon-btn.archive-btn:hover { background: var(--blue-50); color: var(--blue); }
+
+.sidebar-import { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.sidebar-import .btn { width: 100%; justify-content: center; }
+@media (max-width: 1000px) {
+  .sidebar-import { margin: 0; padding: 0; border: 0; }
+  .sidebar-import .btn { width: auto; }
+}
+
+.excel-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 700px) { .excel-kpis { grid-template-columns: 1fr; } }

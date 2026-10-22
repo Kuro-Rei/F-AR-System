@@ -5,11 +5,20 @@ const ledgerFoot = document.getElementById('ledger-foot');
 const ledgerPager = document.getElementById('ledger-pager');
 const importBtn = document.getElementById('import-btn');
 const importFile = document.getElementById('import-file');
+const archiveBtn = document.getElementById('archive-selected');
+const archiveCount = document.getElementById('archive-selected-count');
 
 let totalRecords = 0;
 let currentPage = 1;
 
 const ledgerRows = () => [...ledgerBody.querySelectorAll('tr')];
+const checkedRows = () => ledgerRows().filter(r => r.querySelector('input[type="checkbox"]:checked'));
+
+function updateArchiveButton() {
+    const n = checkedRows().length;
+    archiveBtn.hidden = n === 0;
+    archiveCount.textContent = n;
+}
 
 function updateFooter() {
     const visible = ledgerRows().filter(r => !r.hidden && r.querySelector('input')).length;
@@ -44,8 +53,8 @@ function rowHtml(r) {
             <td>${fmtNum(volume)}</td>
             <td>${fmtMoney(r.price)}</td>
             <td class="num">
-                <button class="icon-btn" data-booking-id="${r.id}" aria-label="Delete record ${r.id}">
-                    <i class="i fa-solid fa-trash-can"></i><span>Delete</span>
+                <button class="icon-btn archive-btn" data-booking-id="${r.id}" aria-label="Archive record ${r.id}">
+                    <i class="i fa-solid fa-box-archive"></i><span>Archive</span>
                 </button>
             </td>
         </tr>`;
@@ -84,6 +93,7 @@ async function loadRecords() {
 
         totalRecords = data.total;
         selectAll.checked = false;
+        updateArchiveButton();
         updateFooter();
         buildPager(data.pages);
     } catch (err) {
@@ -110,6 +120,54 @@ selectAll.addEventListener('change', () => {
         const box = r.querySelector('input[type="checkbox"]');
         if (box) box.checked = selectAll.checked;
     });
+    updateArchiveButton();
+});
+
+ledgerBody.addEventListener('change', updateArchiveButton);
+
+// archive selected
+archiveBtn.addEventListener('click', async () => {
+    const rows = checkedRows();
+    const ids = rows.map(r => r.querySelector('.icon-btn')?.dataset.bookingId).filter(Boolean);
+
+    if (!ids.length) return;
+
+    if (!confirm('Move ' + ids.length + (ids.length === 1 ? ' record' : ' records') + ' to archive?')) return;
+
+    archiveBtn.disabled = true;
+
+    const results = await Promise.all(ids.map(async id => {
+        try {
+            const res = await fetch('/api/records/' + encodeURIComponent(id) + '/trash', { method: 'POST' });
+            return res.ok;
+        } catch (err) {
+            return false;
+        }
+    }));
+
+    const done = results.filter(Boolean).length;
+    const failed = results.length - done;
+
+    archiveBtn.disabled = false;
+    totalRecords = Math.max(0, totalRecords - done);
+
+    const onPage = ledgerRows().filter(r => r.querySelector('input[type="checkbox"]')).length;
+    if (done >= onPage && currentPage > 1) currentPage--;
+
+    if (done) addLog('Delete', 'Moved ' + done + (done === 1 ? ' record' : ' records') + ' to trash');
+
+    showToast(failed
+        ? done + ' moved to archive; ' + failed + ' failed'
+        : done + (done === 1 ? ' record' : ' records') + ' moved to archive');
+
+    await loadRecords();
+    if (typeof window.reloadDashboard === 'function') {
+        try {
+            await window.reloadDashboard();
+        } catch (refreshError) {
+            console.error('Could not refresh dashboard charts:', refreshError);
+        }
+    }
 });
 
 // delete
@@ -127,7 +185,7 @@ ledgerBody.addEventListener('click', async e => {
         return;
     }
 
-    if (!confirm('Move ' + name + ' to trash?')) return;
+    if (!confirm('Move ' + name + ' to archive?')) return;
 
     btn.disabled = true;
 
@@ -144,7 +202,7 @@ ledgerBody.addEventListener('click', async e => {
         }
 
         if (!res.ok) {
-            throw new Error(data.error || 'Could not move this booking to Trash.');
+            throw new Error(data.error || 'Could not move this booking to Archive.');
         }
 
         row.remove();
@@ -156,7 +214,7 @@ ledgerBody.addEventListener('click', async e => {
         }
 
         addLog('Delete', 'Moved ' + name + ' to trash');
-        showToast(name + ' moved to trash');
+        showToast(name + ' moved to archive');
 
         await loadRecords();
         if (typeof window.reloadDashboard === 'function') {
@@ -164,12 +222,12 @@ ledgerBody.addEventListener('click', async e => {
                 await window.reloadDashboard();
             } catch (refreshError) {
                 console.error('Could not refresh dashboard charts:', refreshError);
-                showToast('Record moved to Trash, but the dashboard could not refresh.');
+                showToast('Record moved to Archive, but the dashboard could not refresh.');
             }
         }
     } catch (err) {
         btn.disabled = false;
-        showToast(err.message || 'Could not move this booking to Trash. Please try again.');
+        showToast(err.message || 'Could not move this booking to Archive. Please try again.');
     }
 });
 

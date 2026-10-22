@@ -22,7 +22,7 @@
         <a href="{{ url_for('views.dashboard') }}" class="nav-link"><i
             class="i fa-solid fa-table-cells-large"></i>Dashboard</a>
         <a href="{{ url_for('views.reports') }}" class="nav-link"><i class="i fa-solid fa-chart-column"></i>Reports</a>
-        <a href="{{ url_for('views.trash') }}" class="nav-link"><i class="i fa-solid fa-trash-can"></i>Trash</a>
+        <a href="{{ url_for('views.trash') }}" class="nav-link"><i class="i fa-solid fa-box-archive"></i>Archive</a>
         <a href="{{ url_for('views.logs') }}" class="nav-link"><i class="i fa-solid fa-list"></i>Logs</a>
       </nav>
     </aside>
@@ -81,6 +81,7 @@
                     autocomplete="name" maxlength="80" required placeholder="Your full name" /></label>
                 <label class="field"><span>Job title <em>*</em></span><input name="role" id="profile-role" type="text"
                     maxlength="60" required placeholder="Your role" /></label>
+
               </div>
               <div class="form-actions">
                 <button class="btn" type="button" id="cancel-profile">

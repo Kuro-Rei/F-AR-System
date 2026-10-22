@@ -110,7 +110,7 @@
                 const x = margin.l + innerW * t / 5;
 
                 grid.append(line(x, margin.t, x, margin.t + innerH));
-                chart.append(txt(x, H - 8, compact(axisMax * t / 5)));
+                chart.append(txt(x, H - 8, format(axisMax * t / 5)));
             }
 
             items.forEach((d, i) => {
@@ -238,28 +238,36 @@
         return [...m].map(([label, value]) => ({ label, value }));
     }
 
-    function datesBetween(start, end) {
+    const isoDate = d =>
+        d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+
+    // weeks start on Monday
+    function weekStart(date) {
+        const d = new Date(date + 'T12:00:00');
+        d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+        return isoDate(d);
+    }
+
+    function weeksBetween(start, end) {
         if (!start || !end || start > end) return [];
 
         const result = [];
-
-        let cursor = new Date(start + 'T12:00:00'),
+        const cursor = new Date(weekStart(start) + 'T12:00:00'),
             limit = new Date(end + 'T12:00:00');
 
-        for (
-            let i = 0;
-            cursor <= limit && i < 366;
-            i++, cursor.setDate(cursor.getDate() + 1)
-        ) {
-            result.push(
-                cursor.getFullYear() + '-' +
-                String(cursor.getMonth() + 1).padStart(2, '0') + '-' +
-                String(cursor.getDate()).padStart(2, '0')
-            );
+        for (let i = 0; cursor <= limit && i < 110; i++, cursor.setDate(cursor.getDate() + 7)) {
+            result.push(isoDate(cursor));
         }
 
         return result;
     }
+
+    const shortDate = (d, withYear) =>
+        new Date(d + 'T12:00:00').toLocaleDateString('en-PH', withYear
+            ? { month: 'short', day: 'numeric', year: 'numeric' }
+            : { month: 'short', day: 'numeric' });
 
     function render() {
         const selected = rows.filter(r => {
@@ -272,61 +280,68 @@
         const sales = selected.reduce((sum, r) => sum + r.sales, 0),
             volume = selected.reduce((sum, r) => sum + r.volume, 0);
 
-        el('kpi-sales').textContent = money(sales);
-        el('kpi-volume').textContent = number(volume) + ' kg';
-        el('kpi-average').textContent = volume ? money(sales / volume) : '—';
-        el('kpi-records').textContent = number(selected.length);
-
-        el('filter-note').textContent =
-            selected.length + ' of ' + rows.length + ' Excel sales records match your filters.';
-
-        const ds = new Map(
-            aggregate(selected, 'date', 'sales').map(x => [x.label, x.value])
-        );
-
-        const dv = new Map(
-            aggregate(selected, 'date', 'volume').map(x => [x.label, x.value])
-        );
-
         const relevant = selected.map(r => r.date).sort();
         const start = from.value || relevant[0],
             end = to.value || relevant[relevant.length - 1];
 
-        const days = datesBetween(start, end);
+        const weeks = weeksBetween(start, end);
 
-        const labels = days.map(d =>
-            new Date(d + 'T12:00:00').toLocaleDateString('en-PH', {
-                month: 'short',
-                day: 'numeric'
-            })
+        el('kpi-sales').textContent = money(sales);
+        el('kpi-sales-note').textContent = selected.length && start && end
+            ? selected.length + (selected.length === 1 ? ' transaction' : ' transactions') +
+              ' | ' + shortDate(start) + ' - ' + shortDate(end, true)
+            : 'No matching transactions';
+
+        el('kpi-volume').textContent = number(volume) + ' kg';
+        el('kpi-volume-note').textContent = volume
+            ? 'Avg price: ' + money(sales / volume) + ' per kg'
+            : '—';
+
+        el('kpi-average').textContent = selected.length ? money(sales / selected.length) : '—';
+        el('kpi-average-note').textContent = 'per transaction | ' +
+            (weeks.length ? compact(sales / weeks.length) + ' per week' : '—');
+
+        el('filter-note').textContent =
+            selected.length + ' of ' + rows.length + ' Excel sales records match your filters.';
+
+        const withWeek = selected.map(r => ({ ...r, week: weekStart(r.date) }));
+
+        const ws = new Map(
+            aggregate(withWeek, 'week', 'sales').map(x => [x.label, x.value])
         );
+
+        const wv = new Map(
+            aggregate(withWeek, 'week', 'volume').map(x => [x.label, x.value])
+        );
+
+        const labels = weeks.map(w => shortDate(w));
 
         draw(
             'chart-sales',
             'line',
-            days.map((d, i) => ({
+            weeks.map((w, i) => ({
                 label: labels[i],
-                value: ds.get(d) || 0
+                value: ws.get(w) || 0
             })),
-            compact
-        );
-
-        draw(
-            'chart-location',
-            'horizontal',
-            aggregate(selected, 'location', 'sales')
-                .sort((a, b) => b.value - a.value)
-                .slice(0, 10),
             compact
         );
 
         draw(
             'chart-volume',
             'column',
-            days.map((d, i) => ({
+            weeks.map((w, i) => ({
                 label: labels[i],
-                value: dv.get(d) || 0
+                value: wv.get(w) || 0
             })),
+            v => number(v) + ' kg'
+        );
+
+        draw(
+            'chart-location',
+            'horizontal',
+            aggregate(selected, 'location', 'volume')
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 10),
             v => number(v) + ' kg'
         );
     }
