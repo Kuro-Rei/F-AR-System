@@ -13,74 +13,85 @@ const tagColors = {
     'Imported excel': 'violet'
 };
 
+const actionLabels = {
+    'LOGIN': 'Login',
+    'DELETE': 'Delete',
+    'RESTORE': 'Restore',
+    'IMPORT': 'Imported excel',
+    'IMPORTED EXCEL': 'Imported excel'
+};
+
 let filter = 'all';
 let query = '';
 let page = 1;
+let loadError = '';
 
-function formatTime(iso) {
-    const d = new Date(iso);
+function formatTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '—';
 
-    const date = d.toLocaleDateString('en-US', {
+    const dateText = date.toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
         year: 'numeric'
     });
 
-    const time = d.toLocaleTimeString('en-US', {
+    const timeText = date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit'
     });
 
-    return date + ' · ' + time;
+    return dateText + ' · ' + timeText;
 }
 
-function loadSavedLogs() {
-    let saved = [];
+function displayAction(value) {
+    const rawAction = String(value || '').trim();
+    return actionLabels[rawAction.toUpperCase()] || rawAction || 'Unknown';
+}
 
-    try {
-        saved = JSON.parse(localStorage.getItem('saltLogs') || '[]');
-    } catch (e) {}
+function createCell(row, text, className = '') {
+    const cell = document.createElement('td');
+    if (className) cell.className = className;
+    cell.textContent = text;
+    row.appendChild(cell);
+    return cell;
+}
 
-    saved.reverse().forEach(log => {
-        const tr = document.createElement('tr');
-        const cells = [formatTime(log.time), log.user, null, log.details];
+function createLogRow(log) {
+    const row = document.createElement('tr');
+    row.dataset.logId = log.log_id;
 
-        cells.forEach((text, i) => {
-            const td = document.createElement('td');
+    createCell(row, formatTime(log.logged_at), 'muted');
+    createCell(
+        row,
+        log.full_name || log.username || ('User #' + log.user_id)
+    );
 
-            if (i === 0) td.className = 'muted';
+    const action = displayAction(log.action);
+    const actionCell = createCell(row, '');
+    const tag = document.createElement('span');
+    tag.className = 'tag tag-' + (tagColors[action] || 'blue');
+    tag.textContent = action;
+    actionCell.appendChild(tag);
 
-            if (i === 2) {
-                const tag = document.createElement('span');
+    const details = log.details ||
+        (log.booking_id ? 'Booking #' + log.booking_id : '—');
+    createCell(row, details);
 
-                tag.className = 'tag tag-' + (tagColors[log.action] || 'blue');
-                tag.textContent = log.action;
-
-                td.appendChild(tag);
-            } else {
-                td.textContent = text;
-            }
-
-            tr.appendChild(td);
-        });
-
-        body.prepend(tr);
-    });
+    return row;
 }
 
 function render() {
-    const all = [...body.querySelectorAll('tr:not(.no-results)')];
+    const all = [...body.querySelectorAll('tr[data-log-id]')];
 
     const matches = all.filter(row => {
         const action = row.querySelector('.tag').textContent.toLowerCase();
         const okFilter = filter === 'all' || action === filter;
         const okSearch = row.textContent.toLowerCase().includes(query);
-
         return okFilter && okSearch;
     });
 
     const pages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
-
     page = Math.min(page, pages);
 
     const start = (page - 1) * PAGE_SIZE;
@@ -91,21 +102,25 @@ function render() {
     });
 
     let empty = body.querySelector('.no-results');
-
     if (!matches.length) {
         if (!empty) {
             empty = document.createElement('tr');
             empty.className = 'no-results';
-            empty.innerHTML = '<td colspan="4">No logs match your search.</td>';
-
+            const cell = document.createElement('td');
+            cell.colSpan = 4;
+            empty.appendChild(cell);
             body.appendChild(empty);
         }
+
+        empty.querySelector('td').textContent = loadError ||
+            (all.length ? 'No logs match your search.' : 'No activity logs yet.');
     } else if (empty) {
         empty.remove();
     }
 
     foot.textContent = matches.length
-        ? 'Showing ' + (start + 1) + '–' + (start + shown.length) + ' of ' + matches.length + ' logs'
+        ? 'Showing ' + (start + 1) + '–' + (start + shown.length) +
+            ' of ' + matches.length + ' logs'
         : 'Showing 0 logs';
 
     buildPager(pages);
@@ -115,42 +130,58 @@ function buildPager(pages) {
     pager.innerHTML = '';
 
     const add = (label, target, active) => {
-        const a = document.createElement('a');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = label;
 
-        a.href = '#';
-        a.textContent = label;
+        if (active) link.className = 'active';
 
-        if (active) a.className = 'active';
-
-        a.addEventListener('click', e => {
-            e.preventDefault();
-
+        link.addEventListener('click', event => {
+            event.preventDefault();
             page = Math.min(Math.max(1, target), pages);
-
             render();
         });
 
-        pager.appendChild(a);
+        pager.appendChild(link);
     };
 
     add('‹', page - 1);
+    for (let index = 1; index <= pages; index++) {
+        add(index, index, index === page);
+    }
+    add('›', page + 1);
+}
 
-    for (let i = 1; i <= pages; i++) {
-        add(i, i, i === page);
+async function loadLogs() {
+    try {
+        const response = await fetch('/api/logs');
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Could not load activity logs.');
+        }
+
+        const rows = document.createDocumentFragment();
+        data.rows.forEach(log => rows.appendChild(createLogRow(log)));
+        body.replaceChildren(rows);
+        loadError = '';
+    } catch (error) {
+        body.replaceChildren();
+        loadError = error.message || 'Could not load activity logs. Please try again.';
+        console.error('Could not load activity logs:', error);
     }
 
-    add('›', page + 1);
+    page = 1;
+    render();
 }
 
 chips.forEach(chip => {
     chip.addEventListener('click', () => {
-        chips.forEach(c => c.classList.remove('active'));
-
+        chips.forEach(item => item.classList.remove('active'));
         chip.classList.add('active');
 
         filter = chip.dataset.filter;
         page = 1;
-
         render();
     });
 });
@@ -158,9 +189,7 @@ chips.forEach(chip => {
 search.addEventListener('input', () => {
     query = search.value.trim().toLowerCase();
     page = 1;
-
     render();
 });
 
-loadSavedLogs();
-render();
+loadLogs();

@@ -25,6 +25,42 @@ def dashboard():
 def logs():
     return render_template("logs.html")
 
+
+@views.route('/api/logs')
+def api_logs():
+    conn = None
+    cur = None
+
+    try:
+        conn = db.get_connection()
+        cur = conn.cursor(dictionary=True)
+        cur.execute("""
+            SELECT al.log_id, al.user_id, al.booking_id, al.action, al.details,
+                   DATE_FORMAT(al.logged_at, '%Y-%m-%dT%H:%i:%s') AS logged_at,
+                   u.full_name, u.username
+            FROM activity_logs al
+            LEFT JOIN users u ON u.user_id = al.user_id
+            ORDER BY al.logged_at DESC, al.log_id DESC
+        """)
+        rows = cur.fetchall()
+        return jsonify(rows=rows)
+
+    except Exception:
+        current_app.logger.exception('Could not load activity logs.')
+        return jsonify(error='Could not load activity logs. Please try again.'), 500
+
+    finally:
+        if cur is not None:
+            try:
+                cur.close()
+            except Exception:
+                current_app.logger.exception('Could not close activity log cursor.')
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                current_app.logger.exception('Could not close activity log connection.')
+
 @views.route('/profile')
 def profile():
     return render_template("profile.html")
