@@ -154,7 +154,7 @@ archiveBtn.addEventListener('click', async () => {
     const onPage = ledgerRows().filter(r => r.querySelector('input[type="checkbox"]')).length;
     if (done >= onPage && currentPage > 1) currentPage--;
 
-    if (done) addLog('Delete', 'Moved ' + done + (done === 1 ? ' record' : ' records') + ' to trash');
+    if (done) addLog('Archive', 'Archived ' + done + (done === 1 ? ' record' : ' records'));
 
     showToast(failed
         ? done + ' moved to archive; ' + failed + ' failed'
@@ -213,7 +213,7 @@ ledgerBody.addEventListener('click', async e => {
             currentPage--;
         }
 
-        addLog('Delete', 'Moved ' + name + ' to trash');
+        addLog('Archive', 'Archived ' + name);
         showToast(name + ' moved to archive');
 
         await loadRecords();
@@ -239,7 +239,7 @@ importFile.addEventListener('change', async () => {
     const file = importFile.files[0];
     if (!file) return;
 
-    if (!confirm('Importing "' + file.name + '" will replace ALL existing records, including Trash. Continue?')) {
+    if (!confirm('Importing "' + file.name + '" will replace ALL existing records, including Archive. Continue?')) {
         importFile.value = '';
         return;
     }

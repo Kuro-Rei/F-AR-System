@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Trash | Andrei Rain Salt Dealer{% endblock %}
+{% block title %}Archive | Andrei Rain Salt Dealer{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/trash.css') }}" />
 {% endblock %}
 
-{% block breadcrumb %}<b>Trash</b><span class="sep">›</span>Deleted records{% endblock %}
+{% block breadcrumb %}<b>Archive</b><span class="sep">›</span>Archived records{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
-    <h1>Trash</h1>
-    <p>Delete mo 'to tsaka yan tapos restore mo, okay?</p>
+    <h1>Archive</h1>
+    <p>Records you archive are kept here and can be restored at any time.</p>
   </div>
   <button class="btn" id="restore-all" type="button">
     <i class="i fa-solid fa-rotate-left"></i>Restore all
@@ -22,13 +22,13 @@
 <section class="card has-trash">
   <div class="card-head">
     <div>
-      <h2>deleted records nganiii</h2>
-      <p id="trash-count">Loading trash records...</p>
+      <h2>Archived records</h2>
+      <p id="trash-count">Loading archived records...</p>
     </div>
   </div>
   <div class="toolbar">
     <label class="search"><i class="i fa-solid fa-magnifying-glass"></i><input type="search" id="trash-search"
-        placeholder="Search deleted records..." /></label>
+        placeholder="Search archived records..." /></label>
   </div>
   <div class="bulk-bar">
     <span><b id="selected-count">0</b> selected</span>
@@ -54,16 +54,16 @@
           <th class="num">Count</th>
           <th>Size</th>
           <th class="num">Price</th>
-          <th>Deleted by</th>
-          <th>Deleted at</th>
+          <th>Archived by</th>
+          <th>Archived at</th>
         </tr>
       </thead>
       <tbody id="trash-body"></tbody>
     </table>
   </div>
   <div class="empty">
-    <h2>Trash is empty</h2>
-    <p>Deleted records will show up here so you can restore them.</p>
+    <h2>Archive is Empty</h2>
+    <p>Archived records will appear here once items have been archived.</p>
   </div>
   <div class="table-foot">
     <span id="trash-foot">Showing 0 of 0 records</span>

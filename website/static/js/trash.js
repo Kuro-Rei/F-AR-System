@@ -78,7 +78,7 @@ function refresh() {
 
     selectedCount.textContent = selected.length;
     trashCount.textContent =
-        all.length + (all.length === 1 ? ' item' : ' items') + ' in trash';
+        all.length + (all.length === 1 ? ' item' : ' items') + ' in archive';
     trashFoot.textContent =
         'Showing ' + visible.length + ' of ' + all.length + ' records';
 
@@ -93,17 +93,17 @@ async function loadTrash() {
         const response = await fetch('/api/trash');
         const data = await response.json();
         if (!response.ok) {
-            throw new Error(data.error || 'Could not load Trash records.');
+            throw new Error(data.error || 'Could not load archived records.');
         }
 
         body.innerHTML = data.rows.length
             ? data.rows.map(rowHtml).join('')
-            : '<tr class="empty-row"><td colspan="9">No records in Trash.</td></tr>';
+            : '<tr class="empty-row"><td colspan="9">No records in Archive.</td></tr>';
         refresh();
     } catch (error) {
-        body.innerHTML = '<tr class="error-row"><td colspan="9">Trash records could not be loaded.</td></tr>';
+        body.innerHTML = '<tr class="error-row"><td colspan="9">Archived records could not be loaded.</td></tr>';
         refresh();
-        showToast(error.message || 'Could not load Trash records.');
+        showToast(error.message || 'Could not load archived records.');
     }
 }
 
@@ -167,7 +167,7 @@ restoreSelectedBtn.addEventListener('click', () => {
 });
 
 restoreAllBtn.addEventListener('click', () => {
-    if (confirm('Restore every record in the trash?')) {
+    if (confirm('Restore every record in the archive?')) {
         restore(rows());
     }
 });

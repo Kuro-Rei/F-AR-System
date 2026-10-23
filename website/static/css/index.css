@@ -201,3 +201,58 @@
     color: var(--muted);
     cursor: pointer;
 }
+
+.feature .ico {
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 15px;
+}
+
+.reset-dialog-icon {
+    background: var(--blue-50);
+    color: var(--blue);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 15px;
+    font-size: 20px;
+}
+
+.reset-dialog form {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.reset-dialog .field {
+    margin-bottom: 0;
+}
+
+.reset-dialog .reset-note {
+    min-height: 18px;
+    margin-top: 12px;
+    font-size: 12px;
+    text-align: center;
+    color: var(--green);
+}
+
+.reset-dialog .reset-note.is-error {
+    color: var(--red);
+}
+
+.toggle-pass {
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+    display: grid;
+    place-items: center;
+}
+
+.toggle-pass:hover {
+    color: var(--blue);
+}

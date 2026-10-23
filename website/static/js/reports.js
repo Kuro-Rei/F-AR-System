@@ -32,6 +32,36 @@
     filters.location.add(new Option(location, location));
   }
 
+  const compact = (value) => '₱' + Math.round(value).toLocaleString('en-PH');
+  const shortDate = (date, withYear) => new Date(date + 'T12:00:00').toLocaleDateString('en-PH', withYear
+    ? { month: 'short', day: 'numeric', year: 'numeric' }
+    : { month: 'short', day: 'numeric' });
+  const isoDate = (d) =>
+    d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+
+  // weeks start on Monday (same logic as the Dashboard)
+  function weekStart(date) {
+    const d = new Date(date + 'T12:00:00');
+    d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+    return isoDate(d);
+  }
+
+  function weeksBetween(start, end) {
+    if (!start || !end || start > end) return [];
+
+    const result = [];
+    const cursor = new Date(weekStart(start) + 'T12:00:00'),
+      limit = new Date(end + 'T12:00:00');
+
+    for (let i = 0; cursor <= limit && i < 110; i++, cursor.setDate(cursor.getDate() + 7)) {
+      result.push(isoDate(cursor));
+    }
+
+    return result;
+  }
+
   let visibleRecords = [];
   let dailyRows = [];
   let locationRows = [];
@@ -74,8 +104,22 @@
 
     get('report-sales').textContent = currency(sales);
     get('report-volume').textContent = quantity(volume) + ' kg';
-    get('report-average').textContent = volume ? currency(sales / volume) : '—';
-    get('report-count').textContent = `${visibleRecords.length} matching sales records`;
+    get('report-average').textContent = visibleRecords.length ? currency(sales / visibleRecords.length) : '—';
+
+    const sortedDates = visibleRecords.map((item) => item.date).sort();
+    const rangeStart = from.value || sortedDates[0];
+    const rangeEnd = to.value || sortedDates[sortedDates.length - 1];
+    const weekCount = weeksBetween(rangeStart, rangeEnd).length;
+
+    get('report-sales-note').textContent = visibleRecords.length && rangeStart && rangeEnd
+      ? visibleRecords.length + (visibleRecords.length === 1 ? ' transaction' : ' transactions') +
+        ' | ' + shortDate(rangeStart) + ' - ' + shortDate(rangeEnd, true)
+      : 'No matching transactions';
+    get('report-volume-note').textContent = volume
+      ? 'Avg price: ' + currency(sales / volume) + ' per kg'
+      : '—';
+    get('report-average-note').textContent = 'per transaction | ' +
+      (weekCount ? compact(sales / weekCount) + ' per week' : '—');
     get('report-status').textContent = invalidRange
       ? 'Start date must be on or before end date.'
       : `${visibleRecords.length} of ${records.length} Excel records included in this report.`;

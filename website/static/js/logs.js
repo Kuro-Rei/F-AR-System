@@ -8,14 +8,16 @@ const PAGE_SIZE = 5;
 
 const tagColors = {
     'Login': 'blue',
-    'Delete': 'red',
+    'Archive': 'red',
     'Restore': 'green',
     'Imported excel': 'violet'
 };
 
 const actionLabels = {
     'LOGIN': 'Login',
-    'DELETE': 'Delete',
+    'ARCHIVE': 'Archive',
+    'ARCHIVED': 'Archive',
+    'DELETE': 'Archive',
     'RESTORE': 'Restore',
     'IMPORT': 'Imported excel',
     'IMPORTED EXCEL': 'Imported excel'
@@ -49,6 +51,16 @@ function displayAction(value) {
     return actionLabels[rawAction.toUpperCase()] || rawAction || 'Unknown';
 }
 
+// Normalises wording so every log reads "Archive", "Archived" and "Restored".
+function displayDetails(value) {
+    return String(value)
+        .replace(/\bmoved\s+(.+?)\s+to\s+(?:the\s+)?trash\b/gi, 'Archived $1')
+        .replace(/\b(from|to|in)\s+(?:the\s+)?trash\b/gi, '$1 Archive')
+        .replace(/\btrash\b/gi, 'Archive')
+        .replace(/\bdeleted\b/gi, 'Archived')
+        .replace(/\bdelete\b/gi, 'Archive');
+}
+
 function createCell(row, text, className = '') {
     const cell = document.createElement('td');
     if (className) cell.className = className;
@@ -76,7 +88,7 @@ function createLogRow(log) {
 
     const details = log.details ||
         (log.booking_id ? 'Booking #' + log.booking_id : '—');
-    createCell(row, details);
+    createCell(row, displayDetails(details));
 
     return row;
 }
