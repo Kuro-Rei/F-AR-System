@@ -25,7 +25,7 @@ def dashboard():
 def logs():
     return render_template("logs.html")
 
-
+# name the user that did each actions
 @views.route('/api/logs')
 def api_logs():
     conn = None
@@ -101,6 +101,7 @@ def api_trash():
         """)
         rows = cur.fetchall()
 
+        #convert to normal num
         for row in rows:
             if row['count'] is not None:
                 row['count'] = int(row['count'])
@@ -127,9 +128,12 @@ def api_trash():
             except Exception:
                 current_app.logger.exception('Could not close Trash query connection.')
 
+
 @views.route('/import', methods=['POST'])
 def import_file():
     f = request.files.get('file')
+
+    # Do not accept file that is not an Excel file
     if not f or not f.filename.lower().endswith(('.xlsx', '.xlsm')):
         return jsonify(error='Please upload an .xlsx or .xlsm file'), 400
     try:
@@ -139,6 +143,7 @@ def import_file():
         return jsonify(error=str(e)), 400
     except Exception as e:
         return jsonify(error='Import failed: ' + str(e)), 500
+
 
 @views.route('/api/sales')
 def api_sales():
@@ -170,6 +175,7 @@ def api_sales():
         r['priceKg'] = r['sales'] / r['volume']
     return jsonify(rows)
 
+# return one page with 10 records
 @views.route('/api/records')
 def api_records():
     page = request.args.get('page', 1, type=int)
@@ -208,7 +214,7 @@ def api_records():
     rows = cur.fetchall()
     conn.close()
 
-    # easy use
+    # convert date to text
     for r in rows:
         r['date'] = r['date'].strftime('%Y-%m-%d')
         r['size'] = float(r['size'])
@@ -218,6 +224,10 @@ def api_records():
     return jsonify(rows=rows, total=total, page=page, pages=pages, per_page=per_page)
 
 
+# roles allowed for archiving records
+ROLES = ('Owner', 'Sales manager')
+
+# check login then role then id then row then available records then mark archive then save to log
 @views.route('/api/records/<booking_id>/trash', methods=['POST'])
 def trash_record(booking_id):
     # Session cookies are used for authentication, but this endpoint does not
@@ -225,8 +235,8 @@ def trash_record(booking_id):
     user_id = session.get('user_id')
     if user_id is None:
         return jsonify(error='Authentication required.'), 401
-
-    if session.get('role') not in ('Admin', 'User'):
+    
+    if session.get('role') not in ROLES:
         return jsonify(error='This account is not allowed to perform this action.'), 403
 
     if (

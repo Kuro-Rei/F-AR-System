@@ -1,4 +1,9 @@
 from flask import Flask
+from pathlib import Path
+import os
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).resolve().parent.parent / '.env', encoding='utf-8-sig')
+print('MAIL_USER loaded:', bool(os.environ.get('MAIL_USER')))
 
 def create_app():
     app = Flask(__name__)

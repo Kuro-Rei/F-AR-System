@@ -94,74 +94,175 @@
       <div class="reset-dialog-icon"><i class="fa-solid fa-key" aria-hidden="true"></i></div>
       <h2 id="reset-title">Forgot your password?</h2>
       <p id="reset-description">
-        Enter your username to request a password reset. Your system administrator will complete the reset for you.
+        Enter the email address.
       </p>
+
+      <!-- email confirmation -->
       <form id="reset-form" novalidate>
         <div class="field">
-          <label for="reset-user">Username</label>
+          <label for="reset-email">Email</label>
           <div>
-            <i class="i fa-solid fa-user"></i><input id="reset-user" type="text" placeholder="Enter your username" autocomplete="username" />
+            <i class="i fa-solid fa-envelope"></i><input id="reset-email" type="email" placeholder="Enter your email" autocomplete="email" />
           </div>
         </div>
         <p class="reset-note" id="reset-note" role="status" aria-live="polite"></p>
         <div class="logout-dialog-actions">
           <button type="button" class="btn" id="reset-cancel">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="reset-submit">Request reset</button>
+          <button type="submit" class="btn btn-primary" id="reset-submit">Send code</button>
+        </div>
+      </form>
+
+      <!-- code and new password -->
+      <form id="reset-form-2" novalidate hidden>
+        <div class="field">
+          <label for="reset-code">Reset code</label>
+          <div>
+            <i class="i fa-solid fa-hashtag"></i><input id="reset-code" type="text" placeholder="XXXX-XXXX" autocomplete="one-time-code" maxlength="12" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="reset-pass">New password</label>
+          <div>
+            <i class="i fa-solid fa-lock"></i><input id="reset-pass" type="password" placeholder="At least 8 characters" autocomplete="new-password" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="reset-confirm">Confirm password</label>
+          <div>
+            <i class="i fa-solid fa-lock"></i><input id="reset-confirm" type="password" placeholder="Re-enter new password" autocomplete="new-password" />
+          </div>
+        </div>
+        <p class="reset-note" id="reset-note-2" role="status" aria-live="polite"></p>
+        <div class="logout-dialog-actions">
+          <button type="button" class="btn" id="reset-cancel-2">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="reset-submit-2">Reset password</button>
         </div>
       </form>
     </section>
   </div>
   <script>
     (function () {
-      var link = document.getElementById('forgot-link'),
-        overlay = document.getElementById('reset-overlay'),
-        form = document.getElementById('reset-form'),
-        input = document.getElementById('reset-user'),
-        note = document.getElementById('reset-note'),
-        cancel = document.getElementById('reset-cancel'),
-        submit = document.getElementById('reset-submit');
+      var $ = function (id) { return document.getElementById(id); };
+      var link = $('forgot-link'), overlay = $('reset-overlay'),
+        title = $('reset-title'), desc = $('reset-description'),
+        form1 = $('reset-form'), email = $('reset-email'), note1 = $('reset-note'),
+        cancel1 = $('reset-cancel'), submit1 = $('reset-submit'),
+        form2 = $('reset-form-2'), code = $('reset-code'), pass = $('reset-pass'),
+        confirmPass = $('reset-confirm'), note2 = $('reset-note-2'),
+        cancel2 = $('reset-cancel-2'), submit2 = $('reset-submit-2');
+      var sentTo = '';
+
+      var DESC_1 = desc.textContent;
+
+      function setNote(el, msg, isError) {
+        el.textContent = msg;
+        el.classList.toggle('is-error', !!isError);
+      }
+
+      async function post(url, fields) {
+        var res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(fields)
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+        return data;
+      }
 
       function openDialog(e) {
         e.preventDefault();
-        input.value = document.getElementById('user').value.trim();
         overlay.hidden = false;
-        input.focus();
+        email.focus();
       }
 
       function closeDialog() {
         overlay.hidden = true;
-        form.reset();
-        note.textContent = '';
-        note.classList.remove('is-error');
-        input.disabled = false;
-        submit.disabled = false;
-        cancel.textContent = 'Cancel';
+        form1.reset();
+        form2.reset();
+        form1.hidden = false;
+        form2.hidden = true;
+        title.textContent = 'Forgot your password?';
+        desc.textContent = DESC_1;
+        setNote(note1, '');
+        setNote(note2, '');
+        [email, submit1, code, pass, confirmPass, submit2].forEach(function (el) { el.disabled = false; });
+        cancel2.textContent = 'Cancel';
         link.focus();
       }
 
       link.addEventListener('click', openDialog);
-      cancel.addEventListener('click', closeDialog);
+      cancel1.addEventListener('click', closeDialog);
+      cancel2.addEventListener('click', closeDialog);
       overlay.addEventListener('click', function (e) {
         if (e.target === overlay) closeDialog();
       });
 
-      form.addEventListener('submit', function (e) {
+      // Step 1: request the code
+      form1.addEventListener('submit', async function (e) {
         e.preventDefault();
-        var name = input.value.trim();
-        note.classList.remove('is-error');
+        var value = email.value.trim();
+        setNote(note1, '');
 
-        if (!name) {
-          note.classList.add('is-error');
-          note.textContent = 'Please enter your username.';
-          input.focus();
+        if (!value || !email.checkValidity()) {
+          setNote(note1, 'Please enter a valid email address.', true);
+          email.focus();
           return;
         }
 
-        note.textContent = 'Reset request received for "' + name + '". Please contact your system administrator to complete the password reset.';
-        input.disabled = true;
-        submit.disabled = true;
-        cancel.textContent = 'Close';
-        cancel.focus();
+        submit1.disabled = true;
+        try {
+          await post('/forgot-password', { email: value });
+          sentTo = value;
+          form1.hidden = true;
+          form2.hidden = false;
+          title.textContent = 'Reset your password';
+          desc.textContent = 'If ' + value + ' is registered, we sent an 8-character code to it. ' +
+            'Enter the code and choose a new password.';
+          code.focus();
+        } catch (err) {
+          submit1.disabled = false;
+          setNote(note1, err.message, true);
+        }
+      });
+
+      // Step 2: code + new password
+      form2.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        setNote(note2, '');
+
+        if (!code.value.trim()) {
+          setNote(note2, 'Please enter the code from your email.', true);
+          code.focus();
+          return;
+        }
+        if (pass.value.length < 8) {
+          setNote(note2, 'Password must be at least 8 characters.', true);
+          pass.focus();
+          return;
+        }
+        if (pass.value !== confirmPass.value) {
+          setNote(note2, 'Passwords do not match.', true);
+          confirmPass.focus();
+          return;
+        }
+
+        submit2.disabled = true;
+        try {
+          var data = await post('/reset-password', {
+            email: sentTo,
+            code: code.value,
+            password: pass.value,
+            confirm: confirmPass.value
+          });
+          setNote(note2, data.message);
+          [code, pass, confirmPass].forEach(function (el) { el.disabled = true; });
+          cancel2.textContent = 'Close';
+          cancel2.focus();
+        } catch (err) {
+          submit2.disabled = false;
+          setNote(note2, err.message, true);
+        }
       });
 
       document.addEventListener('keydown', function (e) {
@@ -170,7 +271,11 @@
         if (e.key === 'Escape') {
           closeDialog();
         } else if (e.key === 'Tab') {
-          var els = [input, cancel, submit].filter(function (el) { return !el.disabled; });
+          var els = Array.prototype.filter.call(
+            overlay.querySelectorAll('input, button'),
+            function (el) { return !el.disabled && el.offsetParent !== null; }
+          );
+          if (!els.length) return;
           var first = els[0], last = els[els.length - 1];
 
           if (e.shiftKey && document.activeElement === first) {

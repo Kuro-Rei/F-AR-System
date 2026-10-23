@@ -33,6 +33,7 @@ def import_excel(file, filename, user_id):
         for booking_date, location, count, size, price in df.itertuples(index=False):
             location = str(location).strip()
 
+            # if a location is new, add to the table
             if location not in location_ids:
                 cur.execute(
                     "INSERT INTO location (location_name) VALUES (%s) "
