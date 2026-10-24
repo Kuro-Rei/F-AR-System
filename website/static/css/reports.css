@@ -20,6 +20,7 @@
 .bar-row > span { overflow-wrap: anywhere; }
 .bar-row b { white-space: nowrap; }
 .report-empty { padding: 18px 4px; color: var(--muted); text-align: center; }
+.report-print-header, .report-print-total { display: none; }
 @media (max-width: 950px) { .report-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) {
   .report-filter-grid { grid-template-columns: 1fr; }
@@ -28,11 +29,71 @@
   .bar-row { grid-template-columns: minmax(75px, 110px) minmax(0, 1fr) minmax(80px, 110px); gap: 8px; font-size: 12px; }
 }
 @media print {
+  @page { size: A4 portrait; margin: 12mm 14mm; }
+
   .sidebar, .topbar, .page-actions, .report-filters, .logout-overlay, .toast { display: none !important; }
-  .app { display: block; }
-  main { width: 100%; }
-  .content { padding: 0; }
-  .card { break-inside: avoid; }
+  html, body { background: #fff !important; color: #111; font-size: 10pt; }
+  .app { display: block; min-height: 0; }
+  main { width: auto; max-width: none; margin: 0; padding: 0; }
+  .content { display: grid; width: auto; max-width: none; gap: 9px; padding: 0; }
+  .content > .page-head { display: none; }
+  .report-print-header {
+    display: block;
+    margin: 0 0 3px;
+    padding: 0 0 7px;
+    border-bottom: 2px solid #333;
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+  .report-print-business { margin: 0 0 2px; font-size: 10pt; font-weight: 600; }
+  .report-print-header h1 { margin: 0 0 4px; font-size: 19pt; line-height: 1.15; }
+  .report-print-header p { margin: 2px 0; color: #333; font-size: 8.5pt; }
+
+  .card {
+    box-shadow: none !important;
+    border-color: #bbb;
+    border-radius: 0;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+  .report-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+  .report-summary .insight { gap: 3px; padding: 8px 10px; }
+  .report-summary .insight strong { font-size: 15pt; }
+  .report-summary .insight p { margin: 0; font-size: 8pt; }
+
+  .report-location-card, .report-daily-card { margin: 0; }
+  .report-location-card .card-head, .report-daily-card .card-head { padding: 7px 10px 5px; }
+  .report-location-card .card-head h2, .report-daily-card .card-head h2 { font-size: 12pt; }
+  .report-location-card .card-head p, .report-daily-card .card-head p { margin: 1px 0 0; font-size: 8pt; }
+  .bars { gap: 3px; padding: 3px 10px 8px; }
+  .bar-row {
+    grid-template-columns: minmax(95px, 150px) minmax(0, 1fr) minmax(85px, 110px);
+    gap: 7px;
+    font-size: 8pt;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .bar-row .track { height: 5px; }
+
   .table-wrap { overflow: visible; }
-  body { background: white; }
+  .report-daily-card table { width: 100%; border-collapse: collapse; }
+  .report-daily-card thead { display: table-header-group; }
+  .report-daily-card tfoot { display: table-row-group; }
+  .report-daily-card tr { break-inside: avoid; page-break-inside: avoid; }
+  .report-daily-card th, .report-daily-card td { padding: 4px 8px; font-size: 8.5pt; }
+  .report-daily-card th { color: #222; background: #eee !important; }
+  .report-daily-card .report-print-total { display: table-row-group; }
+  .report-daily-card .report-print-total td {
+    border-top: 2px solid #333;
+    text-align: right;
+    font-weight: 700;
+  }
+  .report-daily-card .table-foot { display: none; }
+  .report-empty { padding: 6px 4px; }
 }

@@ -12,16 +12,23 @@
 {% block topbar_extra %}{% endblock %}
 
 {% block content %}
+<header class="report-print-header">
+  <p class="report-print-business" id="report-print-business"></p>
+  <h1>Sales Report</h1>
+  <p>Reporting period: <span id="report-print-period"></span></p>
+  <p>Generated: <time id="report-print-generated"></time></p>
+</header>
+
 <div class="page-head">
   <div>
     <h1>Reports</h1>
-    <p>Detailed reports based on the same Excel sales records as the Dashboard.</p>
+    <p>Sales analysis based on current active booking records.</p>
   </div>
   <div class="page-actions">
-    <button class="btn" id="export-csv" type="button">
+    <button class="btn" id="export-csv" type="button" disabled>
       <i class="i fa-solid fa-download"></i>Export CSV
     </button>
-    <button class="btn btn-primary" id="print-pdf" type="button">
+    <button class="btn btn-primary" id="print-pdf" type="button" disabled>
       <i class="i fa-solid fa-print"></i>Print PDF
     </button>
   </div>
@@ -59,14 +66,14 @@
     </label>
     <label>Search records<input id="report-search" type="search" placeholder="Search date or location..." /></label>
   </div>
-  <p class="report-status" id="report-status" role="status"></p>
+  <p class="report-status" id="report-status" role="status">Loading active sales records...</p>
 </section>
 
 <section class="grid-3 report-summary" aria-label="Report summary">
-  <article class="card insight"><small>Total sales</small><strong id="report-sales">₱0.00</strong>
+  <article class="card insight"><small>Total sales</small><strong id="report-sales">—</strong>
     <p id="report-sales-note">—</p>
   </article>
-  <article class="card insight"><small>Total volume sold</small><strong id="report-volume">0 kg</strong>
+  <article class="card insight"><small>Total volume sold</small><strong id="report-volume">—</strong>
     <p id="report-volume-note">—</p>
   </article>
   <article class="card insight"><small>Average sales</small><strong id="report-average">—</strong>
@@ -74,7 +81,7 @@
   </article>
 </section>
 
-<section class="card">
+<section class="card report-location-card">
   <div class="card-head">
     <div>
       <h2>Sales by location</h2>
@@ -84,7 +91,7 @@
   <div class="bars" id="report-location-bars"></div>
 </section>
 
-<section class="card">
+<section class="card report-daily-card">
   <div class="card-head">
     <div>
       <h2>Daily summary</h2>
@@ -102,6 +109,9 @@
         </tr>
       </thead>
       <tbody id="report-daily-body"></tbody>
+      <tfoot class="report-print-total">
+        <tr><td colspan="4" id="report-print-total-value"></td></tr>
+      </tfoot>
     </table>
   </div>
   <div class="table-foot"><span id="report-days">0 days with sales</span><strong id="report-total">Total ₱0.00</strong>
@@ -110,6 +120,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/excel-dashboard-data.js') }}"></script>
 <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
 {% endblock %}

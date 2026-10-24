@@ -113,20 +113,20 @@ def api_trash():
         return jsonify(rows=rows)
 
     except Exception:
-        current_app.logger.exception('Could not load Trash records.')
-        return jsonify(error='Could not load Trash records. Please try again.'), 500
+        current_app.logger.exception('Could not load archived records.')
+        return jsonify(error='Could not load archived records. Please try again.'), 500
 
     finally:
         if cur is not None:
             try:
                 cur.close()
             except Exception:
-                current_app.logger.exception('Could not close Trash query cursor.')
+                current_app.logger.exception('Could not close archived-record query cursor.')
         if conn is not None:
             try:
                 conn.close()
             except Exception:
-                current_app.logger.exception('Could not close Trash query connection.')
+                current_app.logger.exception('Could not close archived-record query connection.')
 
 
 @views.route('/import', methods=['POST'])
@@ -224,8 +224,8 @@ def api_records():
     return jsonify(rows=rows, total=total, page=page, pages=pages, per_page=per_page)
 
 
-# roles allowed for archiving records
-ROLES = ('Owner', 'Sales manager')
+# Roles allowed to archive and restore records.
+ROLES = ('Admin', 'User')
 
 # check login then role then id then row then available records then mark archive then save to log
 @views.route('/api/records/<booking_id>/trash', methods=['POST'])
@@ -257,7 +257,7 @@ def trash_record(booking_id):
         conn.start_transaction()
         cur = conn.cursor(dictionary=True)
 
-        # Lock this booking while checking and changing its Trash state.
+        # Lock this booking while checking and changing its Archive state.
         cur.execute(
             'SELECT deleted_at FROM booking WHERE booking_id = %s FOR UPDATE',
             (booking_id,)
@@ -270,7 +270,7 @@ def trash_record(booking_id):
 
         if booking['deleted_at'] is not None:
             conn.rollback()
-            return jsonify(error='Booking record is already in Trash.'), 409
+            return jsonify(error='Booking record is already in Archive.'), 409
 
         cur.execute(
             'UPDATE booking '
@@ -281,25 +281,25 @@ def trash_record(booking_id):
 
         if cur.rowcount != 1:
             conn.rollback()
-            return jsonify(error='Booking record could not be moved to Trash.'), 409
+            return jsonify(error='Booking record could not be archived.'), 409
 
         cur.execute(
             'INSERT INTO activity_logs (user_id, booking_id, action, details) '
             'VALUES (%s, %s, %s, %s)',
-            (user_id, booking_id, 'DELETE', f'Moved booking #{booking_id} to Trash')
+            (user_id, booking_id, 'DELETE', f'Archived booking #{booking_id}')
         )
 
         conn.commit()
-        return jsonify(message='Booking moved to Trash.', booking_id=booking_id), 200
+        return jsonify(message='Booking archived.', booking_id=booking_id), 200
 
     except Exception:
         if conn is not None:
             try:
                 conn.rollback()
             except Exception:
-                current_app.logger.exception('Could not roll back failed Trash operation.')
-        current_app.logger.exception('Could not move booking to Trash.')
-        return jsonify(error='Could not move booking to Trash. Please try again.'), 500
+                current_app.logger.exception('Could not roll back failed Archive operation.')
+        current_app.logger.exception('Could not archive booking.')
+        return jsonify(error='Could not archive booking. Please try again.'), 500
 
     finally:
         if cur is not None:
@@ -353,7 +353,7 @@ def restore_record(booking_id):
 
         if booking['deleted_at'] is None:
             conn.rollback()
-            return jsonify(error='Booking record is not in Trash.'), 409
+            return jsonify(error='Booking record is not in Archive.'), 409
 
         cur.execute(
             'UPDATE booking '
@@ -370,7 +370,7 @@ def restore_record(booking_id):
             'INSERT INTO activity_logs (user_id, booking_id, action, details) '
             'VALUES (%s, %s, %s, %s)',
             (user_id, booking_id, 'RESTORE',
-             f'Restored booking #{booking_id} from Trash')
+             f'Restored booking #{booking_id} from Archive')
         )
 
         conn.commit()
