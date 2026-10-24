@@ -7,6 +7,7 @@
         current = p;
         document.getElementById('profile-name').value = p.name;
         document.getElementById('profile-role').value = p.role;
+        document.getElementById('profile.email').value = p.email;
         document.getElementById('hero-name').textContent = p.name;
         document.getElementById('hero-role').textContent = p.role;
         document.getElementById('summary-role').textContent = p.role;
@@ -19,17 +20,17 @@
         if (!form.reportValidity()) return;
 
         const name = document.getElementById('profile-name').value.trim();
-
+        const email = document.getElementById('profile-email').value.trim();
         try {
             const res = await fetch('/api/profile', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
+                body: JSON.stringify({ name, email })
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Save failed.');
 
-            render({ name: data.name, role: current.role });
+            render({ name: data.name, role: current.role, email: data.email });
             note.textContent = 'Your profile has been saved.';
             if (typeof showToast === 'function') showToast('Profile updated successfully');
         } catch (err) {

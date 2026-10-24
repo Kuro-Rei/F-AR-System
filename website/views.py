@@ -411,7 +411,7 @@ def api_profile():
     cur = conn.cursor(dictionary=True)
 
     try:
-        cur.execute("SELECT full_name AS name, role FROM users WHERE user_id = %s",
+        cur.execute("SELECT full_name AS name, email, role FROM users WHERE user_id = %s",
                     (session['user_id'],))
         return jsonify(cur.fetchone())
     finally:
@@ -422,9 +422,12 @@ def api_profile():
 def update_profile():
     data = request.get_json(silent=True) or {}
     name = str(data.get('name', '')).strip()
-
+    email = str(data.get('email', '')).strip().lower()
     if not name or len(name) > 100:
         return jsonify(error='Name is required (max 100 characters).'), 400
+    if not email or len(email) > 300:
+        return jsonify(error='Please enter a valid email address.'), 400
+
 
     conn = db.get_connection()
     cur = conn.cursor()
