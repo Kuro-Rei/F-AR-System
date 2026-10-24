@@ -225,7 +225,7 @@ def api_records():
 
 
 # Roles allowed to archive and restore records.
-ROLES = ('Admin', 'User')
+ROLES = ('Owner', 'Sales Manager')
 
 # check login then role then id then row then available records then mark archive then save to log
 @views.route('/api/records/<booking_id>/trash', methods=['POST'])
@@ -403,3 +403,43 @@ def restore_record(booking_id):
                 conn.close()
             except Exception:
                 current_app.logger.exception('Could not close database connection.')
+
+
+@views.route('/api/profile')
+def api_profile():
+    conn = db.get_connection()
+    cur = conn.cursor(dictionary=True)
+
+    try:
+        cur.execute("SELECT full_name AS name, role FROM users WHERE user_id = %s",
+                    (session['user_id'],))
+        return jsonify(cur.fetchone())
+    finally:
+        cur.close()
+        conn.close()
+
+@views.route('/api/profile', methods=['POST'])
+def update_profile():
+    data = request.get_json(silent=True) or {}
+    name = str(data.get('name', '')).strip()
+
+    if not name or len(name) > 100:
+        return jsonify(error='Name is required (max 100 characters).'), 400
+
+    conn = db.get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("UPDATE users SET full_name = %s WHERE user_id = %s",
+                    (name, session['user_id']))
+        cur.execute("INSERT INTO activity_logs (user_id, action, details) VALUES (%s, %s, %s)",
+                    (session['user_id'], 'Profile Update', f'Updated profile name to {name}'))
+        conn.commit()
+        session['full_name'] = name
+        return jsonify(message='Profile updated.', name=name)
+    except Exception:
+        conn.rollback()
+        current_app.logger.exception('Could not update profile.')
+        return jsonify(error='Could not update profile. Please try again.'), 500
+    finally:
+        cur.close()
+        conn.close()

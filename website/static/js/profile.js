@@ -1,61 +1,48 @@
 (function () {
     const form = document.getElementById('profile-form');
-    const ids = ['name', 'role', 'email', 'phone'];
     const note = document.getElementById('save-note');
+    let current = null;
 
-    function render() {
-        const p = getSaltProfile();
-
-        ids.forEach(k => {
-            document.getElementById('profile-' + k).value = p[k];
-        });
-
+    function render(p) {
+        current = p;
+        document.getElementById('profile-name').value = p.name;
+        document.getElementById('profile-role').value = p.role;
         document.getElementById('hero-name').textContent = p.name;
         document.getElementById('hero-role').textContent = p.role;
         document.getElementById('summary-role').textContent = p.role;
-
-        document.getElementById('hero-initials').textContent = p.name.trim()
-            .split(/\s+/)
-            .slice(0, 2)
-            .map(x => x[0] || '')
-            .join('')
-            .toUpperCase() || 'K';
-
-        updateSaltProfileUI();
+        document.getElementById('hero-initials').textContent = saltInitials(p.name);
+        updateSaltProfileUI(p);
     }
 
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
         e.preventDefault();
-
         if (!form.reportValidity()) return;
 
-        const p = {};
-
-        ids.forEach(k => {
-            p[k] = document.getElementById('profile-' + k).value.trim();
-        });
-
-        if (!p.name || !p.role) return;
+        const name = document.getElementById('profile-name').value.trim();
 
         try {
-            localStorage.setItem('saltProfile', JSON.stringify(p));
+            const res = await fetch('/api/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Save failed.');
 
-            render();
-
-            note.textContent = 'Your profile has been saved on this browser.';
-
-            if (typeof showToast === 'function') {
-                showToast('Profile updated successfully');
-            }
-        } catch (e) {
-            note.textContent = 'Unable to save changes in this browser.';
+            render({ name: data.name, role: current.role });
+            note.textContent = 'Your profile has been saved.';
+            if (typeof showToast === 'function') showToast('Profile updated successfully');
+        } catch (err) {
+            note.textContent = err.message;
         }
     });
 
     document.getElementById('cancel-profile').addEventListener('click', () => {
-        render();
+        if (current) render(current);
         note.textContent = '';
     });
 
-    render();
+    getSaltProfile().then(render).catch(() => {
+        note.textContent = 'Could not load your profile.';
+    });
 })();
