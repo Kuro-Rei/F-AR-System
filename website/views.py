@@ -225,7 +225,7 @@ def api_records():
 
 
 # Roles allowed to archive and restore records.
-ROLES = ('Owner', 'Sales Manager')
+ROLES = ('Owner', 'Sales manager')
 
 # check login then role then id then row then available records then mark archive then save to log
 @views.route('/api/records/<booking_id>/trash', methods=['POST'])
@@ -320,7 +320,7 @@ def restore_record(booking_id):
     if user_id is None:
         return jsonify(error='Authentication required.'), 401
 
-    if session.get('role') not in ('Admin', 'User'):
+    if session.get('role') not in ROLES:
         return jsonify(error='This account is not allowed to perform this action.'), 403
 
     if (
