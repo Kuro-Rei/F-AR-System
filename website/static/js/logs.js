@@ -10,7 +10,9 @@ const tagColors = {
     'Login': 'blue',
     'Archive': 'red',
     'Restore': 'green',
-    'Imported excel': 'violet'
+    'Imported excel': 'violet',
+    'Profile Update': 'violet',
+    'Password Change': 'blue'
 };
 
 const actionLabels = {
@@ -20,7 +22,13 @@ const actionLabels = {
     'DELETE': 'Archive',
     'RESTORE': 'Restore',
     'IMPORT': 'Imported excel',
-    'IMPORTED EXCEL': 'Imported excel'
+    'IMPORTED EXCEL': 'Imported excel',
+    'PROFILE UPDATE': 'Profile Update',
+    'PROFILE_UPDATE': 'Profile Update',
+    'PASSWORD_CHANGE': 'Password Change',
+    'PASSWORD CHANGE': 'Password Change',
+    'PASSWORD RESET': 'Password Change',
+    'RESET PASSWORD': 'Password Change'
 };
 
 let filter = 'all';
@@ -98,7 +106,10 @@ function render() {
 
     const matches = all.filter(row => {
         const action = row.querySelector('.tag').textContent.toLowerCase();
-        const okFilter = filter === 'all' || action === filter;
+        const okFilter = filter === 'all' ||
+            (filter === 'archive-restore'
+                ? action === 'archive' || action === 'restore'
+                : action === filter);
         const okSearch = row.textContent.toLowerCase().includes(query);
         return okFilter && okSearch;
     });
