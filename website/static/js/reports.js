@@ -2,8 +2,11 @@
 (() => {
   'use strict';
 
-  const records = Array.isArray(window.EXCEL_SALES_DATA) ? window.EXCEL_SALES_DATA : [];
+  let records = [];
+  let recordsLoaded = false;
   const get = (id) => document.getElementById(id);
+  const exportButton = get('export-csv');
+  const printButton = get('print-pdf');
   const filters = {
     from: get('report-from'),
     to: get('report-to'),
@@ -21,16 +24,7 @@
     month: 'short', day: 'numeric', year: 'numeric'
   });
 
-  const dates = records.map((item) => item.date).filter(Boolean).sort();
-  const defaults = { from: dates[0] || '', to: dates[dates.length - 1] || '' };
-  filters.from.value = defaults.from;
-  filters.to.value = defaults.to;
-
-  const locations = [...new Set(records.map((item) => item.location).filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b));
-  for (const location of locations) {
-    filters.location.add(new Option(location, location));
-  }
+  const defaults = { from: '', to: '' };
 
   const compact = (value) => '₱' + Math.round(value).toLocaleString('en-PH');
   const shortDate = (date, withYear) => new Date(date + 'T12:00:00').toLocaleDateString('en-PH', withYear
@@ -80,6 +74,8 @@
   }
 
   function updateReport() {
+    if (!recordsLoaded) return;
+
     const { from, to, location, price, volumeRange, search } = filters;
     const query = search.value.trim().toLowerCase();
     const invalidRange = Boolean(from.value && to.value && from.value > to.value);
@@ -122,8 +118,9 @@
       (weekCount ? compact(sales / weekCount) + ' per week' : '—');
     get('report-status').textContent = invalidRange
       ? 'Start date must be on or before end date.'
-      : `${visibleRecords.length} of ${records.length} Excel records included in this report.`;
+      : `${visibleRecords.length} of ${records.length} active records included in this report.`;
     get('report-total').textContent = 'Total ' + currency(sales);
+    get('report-print-total-value').textContent = 'Total ' + currency(sales);
 
     locationRows = groupBy(visibleRecords, 'location').sort((a, b) => b.sales - a.sales);
     dailyRows = groupBy(visibleRecords, 'date').sort((a, b) => b.label.localeCompare(a.label));
@@ -191,15 +188,9 @@
   }
 
   function downloadCsv() {
+    if (!recordsLoaded) return;
+
     const rows = [
-      ['Sales report', 'Filtered Excel dataset'],
-      ['Date from', filters.from.value],
-      ['Date to', filters.to.value],
-      ['Location', filters.location.value],
-      ['Price per kilo', filters.price.value],
-      ['Volume range', filters.volumeRange.value],
-      ['Record search', filters.search.value],
-      [],
       ['Date', 'Location', 'Orders', 'Kilos', 'Sales (PHP)', 'Price per kg (PHP)'],
       ...visibleRecords.map((item) => [
         item.date, item.location, item.count, item.volume, item.sales, item.priceKg
@@ -217,6 +208,99 @@
     if (typeof showToast === 'function') showToast('Filtered sales report exported.');
   }
 
+  function updatePrintHeading() {
+    const brandName = document.querySelector('.company-brand img')?.alt.trim();
+    const periodStart = filters.from.value ? labelDate(filters.from.value) : 'Any date';
+    const periodEnd = filters.to.value ? labelDate(filters.to.value) : 'Any date';
+    const generatedAt = new Date();
+
+    get('report-print-business').textContent = brandName || document.title;
+    get('report-print-period').textContent = `${periodStart} to ${periodEnd}`;
+    get('report-print-generated').textContent = generatedAt.toLocaleString('en-PH', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+    get('report-print-generated').dateTime = generatedAt.toISOString();
+  }
+
+  function showUnavailable(message) {
+    get('report-status').textContent = message;
+    get('report-sales').textContent = '—';
+    get('report-volume').textContent = '—';
+    get('report-average').textContent = '—';
+    get('report-sales-note').textContent = 'Report unavailable';
+    get('report-volume-note').textContent = '—';
+    get('report-average-note').textContent = '—';
+    get('report-total').textContent = 'Total —';
+    get('report-print-total-value').textContent = 'Total —';
+    get('report-days').textContent = '—';
+
+    const locationBars = get('report-location-bars');
+    locationBars.replaceChildren();
+    empty('Active sales data is unavailable.', locationBars);
+
+    const body = get('report-daily-body');
+    body.replaceChildren();
+    const row = body.insertRow();
+    const cell = row.insertCell();
+    cell.colSpan = 4;
+    cell.className = 'report-empty';
+    cell.textContent = 'Active sales data is unavailable.';
+  }
+
+  async function loadRecords() {
+    try {
+      const response = await fetch('/api/sales', { cache: 'no-store' });
+      let rows;
+      try {
+        rows = await response.json();
+      } catch (parseError) {
+        throw new Error('Could not read active sales data. Please try again.');
+      }
+
+      if (!response.ok) {
+        throw new Error(rows.error || 'Could not load active sales data. Please try again.');
+      }
+      if (!Array.isArray(rows)) {
+        throw new Error('The active sales response was not in the expected format.');
+      }
+
+      // /api/sales returns a bare array with these database-backed fields.
+      records = rows.map((row) => ({
+        date: row.date,
+        location: row.location,
+        count: row.count,
+        size: row.size,
+        volume: row.volume,
+        sales: row.sales,
+        priceKg: row.priceKg
+      }));
+
+      const dates = records.map((item) => item.date).filter(Boolean).sort();
+      defaults.from = dates[0] || '';
+      defaults.to = dates[dates.length - 1] || '';
+      filters.from.value = defaults.from;
+      filters.to.value = defaults.to;
+
+      const locations = [...new Set(records.map((item) => item.location).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b));
+      filters.location.replaceChildren(new Option('All locations', 'All'));
+      for (const location of locations) {
+        filters.location.add(new Option(location, location));
+      }
+
+      recordsLoaded = true;
+      exportButton.disabled = false;
+      printButton.disabled = false;
+      updateReport();
+    } catch (error) {
+      recordsLoaded = false;
+      exportButton.disabled = true;
+      printButton.disabled = true;
+      showUnavailable(error.message || 'Could not load active sales data. Please try again.');
+    }
+  }
+
   Object.values(filters).forEach((field) => field.addEventListener('input', updateReport));
   get('report-reset').addEventListener('click', () => {
     filters.from.value = defaults.from;
@@ -227,8 +311,12 @@
     filters.search.value = '';
     updateReport();
   });
-  get('export-csv').addEventListener('click', downloadCsv);
-  get('print-pdf').addEventListener('click', () => window.print());
+  exportButton.addEventListener('click', downloadCsv);
+  printButton.addEventListener('click', () => {
+    if (recordsLoaded) window.print();
+  });
+  window.addEventListener('beforeprint', updatePrintHeading);
 
-  updateReport();
+  updatePrintHeading();
+  loadRecords();
 })();
