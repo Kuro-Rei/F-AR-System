@@ -143,6 +143,9 @@ def reset_password():
             "reset_password_hash = NULL, reset_password_expiration = NULL "
             "WHERE user_id = %s",
             (generate_password_hash(pw), user['user_id']))
+
+        cur.execute("INSERT INTO activity_logs (user_id, action, details) VALUES (%s, %s, %s)",
+            (user['user_id'], 'Password Change', 'Password changed'))
         conn.commit()
         return jsonify(message='Password updated. You can log in now.')
     finally:

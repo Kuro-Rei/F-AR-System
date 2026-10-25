@@ -430,15 +430,32 @@ def update_profile():
 
 
     conn = db.get_connection()
-    cur = conn.cursor()
+    cur = conn.cursor(dictionary=True)
     try:
-        cur.execute("UPDATE users SET full_name = %s WHERE user_id = %s",
-                    (name, session['user_id']))
+
+        cur.execute("SELECT full_name, email FROM users WHERE user_id = %s",
+                    (session['user_id'],))
+
+        old_profile = cur.fetchone()
+        new_name = name != old_profile['full_name']
+        new_email = email != old_profile['email'].lower()
+
+        cur.execute("UPDATE users SET full_name = %s, email = %s WHERE user_id = %s",
+                    (name, email, session['user_id']))
+
+        if new_name and new_email:
+            profile_details = f'Updated profile name to {name} and {email}'
+        if new_name:
+                    profile_details = f'Updated profile name to {name}'
+        if new_email:
+                    profile_details = f'Updated profile email to {email}'
+            
         cur.execute("INSERT INTO activity_logs (user_id, action, details) VALUES (%s, %s, %s)",
-                    (session['user_id'], 'Profile Update', f'Updated profile name to {name}'))
+                    (session['user_id'], 'Profile Update', profile_details))
+        
         conn.commit()
         session['full_name'] = name
-        return jsonify(message='Profile updated.', name=name)
+        return jsonify(message='Profile updated.', name=name, email=email)
     except Exception:
         conn.rollback()
         current_app.logger.exception('Could not update profile.')

@@ -7,7 +7,7 @@
         current = p;
         document.getElementById('profile-name').value = p.name;
         document.getElementById('profile-role').value = p.role;
-        document.getElementById('profile.email').value = p.email;
+        document.getElementById('profile-email').value = p.email;
         document.getElementById('hero-name').textContent = p.name;
         document.getElementById('hero-role').textContent = p.role;
         document.getElementById('summary-role').textContent = p.role;
