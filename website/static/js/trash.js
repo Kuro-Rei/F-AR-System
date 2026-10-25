@@ -69,8 +69,8 @@ function rowHtml(record) {
             <td class="num">${esc(formatNumber(record.count))}</td>
             <td>${esc(formatNumber(record.size))}${record.size == null ? '' : ' kg'}</td>
             <td class="num">${esc(formatPrice(record.price))}</td>
-            <td>${esc(record.deleted_by || 'Unknown')}</td>
-            <td class="muted">${esc(formatDateTime(record.deleted_at))}</td>
+            <td>${esc(record.archived_by || 'Unknown')}</td>
+            <td class="muted">${esc(formatDateTime(record.archived_at))}</td>
         </tr>`;
 }
 

@@ -89,15 +89,15 @@ def api_trash():
                    b.quantity AS count,
                    s.size_kilos AS size,
                    p.price AS price,
-                   u.full_name AS deleted_by,
-                   DATE_FORMAT(b.deleted_at, '%Y-%m-%d %H:%i:%s') AS deleted_at
+                   u.full_name AS archived_by,
+                   DATE_FORMAT(b.archived_at, '%Y-%m-%d %H:%i:%s') AS archived_at
             FROM booking b
             JOIN location l ON l.location_id = b.location_id
             LEFT JOIN salt s ON s.booking_id = b.booking_id
             LEFT JOIN price p ON p.booking_id = b.booking_id
-            LEFT JOIN users u ON u.user_id = b.deleted_by
-            WHERE b.deleted_at IS NOT NULL
-            ORDER BY b.deleted_at DESC, b.booking_id DESC
+            LEFT JOIN users u ON u.user_id = b.archived_by
+            WHERE b.archived_at IS NOT NULL
+            ORDER BY b.archived_at DESC, b.booking_id DESC
         """)
         rows = cur.fetchall()
 
@@ -160,7 +160,7 @@ def api_sales():
         JOIN location l ON l.location_id = b.location_id
         JOIN salt  s    ON s.booking_id  = b.booking_id
         JOIN price p    ON p.booking_id  = b.booking_id
-        WHERE b.deleted_at IS NULL
+        WHERE b.archived_at IS NULL
           AND b.quantity IS NOT NULL AND s.size_kilos IS NOT NULL AND p.price IS NOT NULL
         ORDER BY b.booking_date, b.booking_id
     """)
@@ -189,7 +189,7 @@ def api_records():
         JOIN location l ON l.location_id = b.location_id
         JOIN salt  s    ON s.booking_id  = b.booking_id
         JOIN price p    ON p.booking_id  = b.booking_id
-        WHERE b.deleted_at IS NULL
+        WHERE b.archived_at IS NULL
           AND (l.location_name LIKE %s OR CAST(b.booking_date AS CHAR) LIKE %s)
     """
 
@@ -259,7 +259,7 @@ def trash_record(booking_id):
 
         # Lock this booking while checking and changing its Archive state.
         cur.execute(
-            'SELECT deleted_at FROM booking WHERE booking_id = %s FOR UPDATE',
+            'SELECT archived_at FROM booking WHERE booking_id = %s FOR UPDATE',
             (booking_id,)
         )
         booking = cur.fetchone()
@@ -268,14 +268,14 @@ def trash_record(booking_id):
             conn.rollback()
             return jsonify(error='Booking record was not found.'), 404
 
-        if booking['deleted_at'] is not None:
+        if booking['archived_at'] is not None:
             conn.rollback()
             return jsonify(error='Booking record is already in Archive.'), 409
 
         cur.execute(
             'UPDATE booking '
-            'SET deleted_at = CURRENT_TIMESTAMP, deleted_by = %s '
-            'WHERE booking_id = %s AND deleted_at IS NULL',
+            'SET archived_at = CURRENT_TIMESTAMP, archived_by = %s '
+            'WHERE booking_id = %s AND archived_at IS NULL',
             (user_id, booking_id)
         )
 
@@ -342,7 +342,7 @@ def restore_record(booking_id):
         cur = conn.cursor(dictionary=True)
 
         cur.execute(
-            'SELECT deleted_at FROM booking WHERE booking_id = %s FOR UPDATE',
+            'SELECT archived_at FROM booking WHERE booking_id = %s FOR UPDATE',
             (booking_id,)
         )
         booking = cur.fetchone()
@@ -351,14 +351,14 @@ def restore_record(booking_id):
             conn.rollback()
             return jsonify(error='Booking record was not found.'), 404
 
-        if booking['deleted_at'] is None:
+        if booking['archived_at'] is None:
             conn.rollback()
             return jsonify(error='Booking record is not in Archive.'), 409
 
         cur.execute(
             'UPDATE booking '
-            'SET deleted_at = NULL, deleted_by = NULL '
-            'WHERE booking_id = %s AND deleted_at IS NOT NULL',
+            'SET archived_at = NULL, archived_by = NULL '
+            'WHERE booking_id = %s AND archived_at IS NOT NULL',
             (booking_id,)
         )
 
