@@ -8,7 +8,10 @@ const trashFoot = document.getElementById('trash-foot');
 const restoreAllBtn = document.getElementById('restore-all');
 const restoreSelectedBtn = document.getElementById('restore-selected');
 const clearBtn = document.getElementById('clear-selection');
+const trashPage = document.getElementById('trash-page');
+const per_page = 10;
 
+let current_page = 1;
 let isRestoring = false;
 
 const rows = () => [...body.querySelectorAll('tr[data-booking-id]')];
@@ -88,6 +91,47 @@ function refresh() {
     card.classList.toggle('is-empty', all.length === 0);
 }
 
+// Draw pagination numbers
+function buildPager(pages) {
+    const items = [];
+    const add = (label, page, active) =>
+        items.push(`<a href="#" data-page="${page}"${active ? ' class="active"' : ''}>${label}</a>`);
+
+    add('‹', Math.max(1, current_page - 1));
+
+    for (let p = 1; p <= pages; p++) {
+        if (p === 1 || p === pages || Math.abs(p - current_page) <= 1) {
+            add(p, p, p === current_page);
+        } else if (Math.abs(p - current_page) === 2) {
+            add('…', p);
+        }
+    }
+
+    add('›', Math.min(pages, current_page + 1));
+    trashPage.innerHTML = items.join('');
+}
+
+
+function showPage() {
+    const query = search.value.trim().toLowerCase();
+
+    // rows that match the search box
+    const matches = rows().filter(row => row.textContent.toLowerCase().includes(query));
+
+    const pages = Math.max(1, Math.ceil(matches.length / per_page));
+    if (current_page > pages) current_page = pages;
+
+    const start = (current_page - 1) * per_page;
+
+    rows().forEach(row => {
+        const position = matches.indexOf(row);   // -1 means "doesn't match the search"
+        row.hidden = position < start || position >= start + per_page;
+    });
+
+    buildPager(pages);
+    refresh();
+}
+
 async function loadTrash() {
     try {
         const response = await fetch('/api/trash');
@@ -99,7 +143,7 @@ async function loadTrash() {
         body.innerHTML = data.rows.length
             ? data.rows.map(rowHtml).join('')
             : '<tr class="empty-row"><td colspan="9">No records in Archive.</td></tr>';
-        refresh();
+        showPage();
     } catch (error) {
         body.innerHTML = '<tr class="error-row"><td colspan="9">Archived records could not be loaded.</td></tr>';
         refresh();
@@ -142,7 +186,7 @@ async function restore(list) {
     }));
 
     isRestoring = false;
-    refresh();
+    showPage();
 
     const restored = results.filter(result => result.success);
     const failed = results.filter(result => !result.success);
@@ -191,13 +235,17 @@ selectAll.addEventListener('change', () => {
 body.addEventListener('change', refresh);
 
 search.addEventListener('input', () => {
-    const query = search.value.trim().toLowerCase();
+    current_page = 1; 
+    showPage();
+});
 
-    rows().forEach(row => {
-        row.hidden = !row.textContent.toLowerCase().includes(query);
-    });
+trashPage.addEventListener('click', e => {
+    const link = e.target.closest('a');
+    if (!link) return;
 
-    refresh();
+    e.preventDefault();
+    current_page = Number(link.dataset.page);
+    showPage();
 });
 
 refresh();

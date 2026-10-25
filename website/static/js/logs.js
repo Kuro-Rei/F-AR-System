@@ -2,8 +2,7 @@ const body = document.getElementById('log-body');
 const search = document.getElementById('log-search');
 const chips = document.querySelectorAll('.chip');
 const foot = document.getElementById('log-foot');
-const pager = document.getElementById('pager');
-
+const logPager = document.getElementById('logs-pager');
 const PAGE_SIZE = 5;
 
 const tagColors = {
@@ -150,29 +149,22 @@ function render() {
 }
 
 function buildPager(pages) {
-    pager.innerHTML = '';
+    const items = [];
+    const add = (label, page, active) =>
+        items.push(`<a href="#" data-page="${page}"${active ? ' class="active"' : ''}>${label}</a>`);
 
-    const add = (label, target, active) => {
-        const link = document.createElement('a');
-        link.href = '#';
-        link.textContent = label;
+    add('‹', Math.max(1, page - 1));
 
-        if (active) link.className = 'active';
-
-        link.addEventListener('click', event => {
-            event.preventDefault();
-            page = Math.min(Math.max(1, target), pages);
-            render();
-        });
-
-        pager.appendChild(link);
-    };
-
-    add('‹', page - 1);
-    for (let index = 1; index <= pages; index++) {
-        add(index, index, index === page);
+    for (let p = 1; p <= pages; p++) {
+        if (p === 1 || p === pages || Math.abs(p - page) <= 1) {
+            add(p, p, p === page);
+        } else if (Math.abs(p - page) === 2) {
+            add('…', p);
+        }
     }
-    add('›', page + 1);
+
+    add('›', Math.min(pages, page + 1));
+    logPager.innerHTML = items.join('');
 }
 
 async function loadLogs() {
@@ -214,5 +206,16 @@ search.addEventListener('input', () => {
     page = 1;
     render();
 });
+
+logPager.addEventListener('click', e => {
+    const link = e.target.closest('a');
+    if (!link) return;
+
+    e.preventDefault();
+    page = Number(link.dataset.page);
+    render();
+});
+
+
 
 loadLogs();
