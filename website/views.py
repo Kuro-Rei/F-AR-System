@@ -144,6 +144,8 @@ def import_file():
     except Exception as e:
         return jsonify(error='Import failed: ' + str(e)), 500
 
+# Feeds the kpi and charts
+# non-archived rows only
 
 @views.route('/api/sales')
 def api_sales():

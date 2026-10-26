@@ -45,6 +45,7 @@
   <div class="excel-filters">
     <label>Date from<input id="filter-from" type="date" /></label>
     <label>Date to<input id="filter-to" type="date" /></label>
+    <label>Month<select id="filter-month"></select></label>
     <label>Location<select id="filter-location"></select></label>
   </div>
   <p class="filter-note" id="filter-note" aria-live="polite"></p>
@@ -63,17 +64,17 @@
 </section>
 
 <section class="excel-charts">
-  <article class="card volume-chart-card">
-    <h2>Weekly Sales Trend</h2>
-    <p>Sales revenue by week</p>
-    <div id="chart-sales" class="excel-chart" role="img" aria-label="Weekly sales line chart"></div>
+  <article class="card chart-sales-card">
+    <h2>Daily Sales Trend</h2>
+    <p>Sales revenue by day</p>
+    <div id="chart-sales" class="excel-chart" role="img" aria-label="Daily sales line chart"></div>
   </article>
-  <article class="card">
-    <h2>Weekly Volume Sold (Kg)</h2>
-    <p>Kilograms sold by week</p>
-    <div id="chart-volume" class="excel-chart" role="img" aria-label="Weekly volume column chart"></div>
+  <article class="card chart-volume-card">
+    <h2>Daily Volume Sold (Kg)</h2>
+    <p>Kilograms sold by day</p>
+    <div id="chart-volume" class="excel-chart" role="img" aria-label="Daily volume column chart"></div>
   </article>
-  <article class="card">
+  <article class="card chart-location-card">
     <h2>Top 10 Location by Volume</h2>
     <p>Locations ranked by kilograms sold</p>
     <div id="chart-location" class="excel-chart" role="img" aria-label="Top ten locations by volume horizontal bar chart"></div>

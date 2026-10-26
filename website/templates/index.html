@@ -19,10 +19,6 @@
       <form class="login-form" action="{{ url_for('auth.login') }}" method="post">
         <span class="eyebrow">Sales management system</span>
         <h1>Welcome back</h1>
-        <p>
-          Log in to manage your sales pipeline, orders, and team performance
-          in one place.
-        </p>
           {% with messages = get_flashed_messages() %}
             {% if messages %}
               <p style="color: #c0392b; font-weight: 600;">{{ messages[0] }}</p>
