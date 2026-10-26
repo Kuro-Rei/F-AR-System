@@ -38,24 +38,21 @@
   <div class="card-head">
     <div>
       <h2>Report filters</h2>
-      <p>Refine results by date, location, price, volume, or record search.</p>
+      <p>Refine results by month, date, location, volume, or record search.</p>
     </div>
     <button class="btn" id="report-reset" type="button">Reset filters</button>
   </div>
   <div class="report-filter-grid">
+    <label>Month
+      <select id="report-month">
+        <option value="">All</option>
+      </select>
+    </label>
     <label>From date<input id="report-from" type="date" /></label>
     <label>To date<input id="report-to" type="date" /></label>
     <label>Location<select id="report-location">
         <option value="All">All locations</option>
       </select></label>
-    <label>Price per kilo
-      <select id="report-price">
-        <option value="All">All prices</option>
-        <option value="Below ₱9/kg">Below ₱9/kg</option>
-        <option value="₱9–₱10.99/kg">₱9–₱10.99/kg</option>
-        <option value="₱11+/kg">₱11+/kg</option>
-      </select>
-    </label>
     <label>Volume range
       <select id="report-volume-range">
         <option value="All">All volumes</option>

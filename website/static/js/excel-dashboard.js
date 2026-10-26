@@ -209,7 +209,7 @@
             });
 
             if (opts.xTitle) {
-                chart.append(txt(margin.l + innerW / 2, margin.t + innerH + 46, opts.xTitle, 'middle', 17, { fill: '#050B47', 'font-weight': 700 }));
+                chart.append(txt(margin.l + innerW / 2, margin.t + innerH + 46, opts.xTitle, 'middle', 17, { fill: '#050B47' }));
             }
 
         } else {

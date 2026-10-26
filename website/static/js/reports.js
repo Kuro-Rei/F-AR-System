@@ -1,4 +1,3 @@
-
 (() => {
   'use strict';
 
@@ -11,7 +10,7 @@
     from: get('report-from'),
     to: get('report-to'),
     location: get('report-location'),
-    price: get('report-price'),
+    month: get('report-month'),
     volumeRange: get('report-volume-range'),
     search: get('report-search')
   };
@@ -56,6 +55,34 @@
     return result;
   }
 
+  const monthLabel = (m) =>
+    new Date(m + '-01T12:00:00').toLocaleDateString('en-PH', { month: 'long', year: 'numeric' }); // "2026-09" -> "September 2026"
+
+  // builds the month dropdown: "All" first, then each month that has records
+  function fillMonths() {
+    const months = [...new Set(records.map((item) => item.date.slice(0, 7)))].sort();
+    filters.month.replaceChildren(
+      new Option('All', ''),
+      ...months.map((m) => new Option(monthLabel(m), m))
+    );
+    filters.month.value = ''; // default: All
+  }
+
+  // choosing a month fills the date range with that month's first and last day
+  // "All" restores the full range of the records
+  function applyMonth() {
+    if (!filters.month.value) {
+      filters.from.value = defaults.from;
+      filters.to.value = defaults.to;
+    } else {
+      const [y, m] = filters.month.value.split('-').map(Number);
+      const lastDay = new Date(y, m, 0).getDate();
+      filters.from.value = filters.month.value + '-01';
+      filters.to.value = filters.month.value + '-' + String(lastDay).padStart(2, '0');
+    }
+    updateReport();
+  }
+
   let visibleRecords = [];
   let dailyRows = [];
   let locationRows = [];
@@ -76,7 +103,7 @@
   function updateReport() {
     if (!recordsLoaded) return;
 
-    const { from, to, location, price, volumeRange, search } = filters;
+    const { from, to, location, volumeRange, search } = filters;
     const query = search.value.trim().toLowerCase();
     const invalidRange = Boolean(from.value && to.value && from.value > to.value);
 
@@ -84,10 +111,6 @@
       (!from.value || item.date >= from.value) &&
       (!to.value || item.date <= to.value) &&
       (location.value === 'All' || item.location === location.value) &&
-      (price.value === 'All' ||
-        (price.value === 'Below ₱9/kg' && Number(item.priceKg) < 9) ||
-        (price.value === '₱9–₱10.99/kg' && Number(item.priceKg) >= 9 && Number(item.priceKg) < 11) ||
-        (price.value === '₱11+/kg' && Number(item.priceKg) >= 11)) &&
       (volumeRange.value === 'All' ||
         (volumeRange.value === '<500 kg' && Number(item.volume) < 500) ||
         (volumeRange.value === '500–1,500 kg' && Number(item.volume) >= 500 && Number(item.volume) <= 1500) ||
@@ -289,6 +312,8 @@
         filters.location.add(new Option(location, location));
       }
 
+      fillMonths();
+
       recordsLoaded = true;
       exportButton.disabled = false;
       printButton.disabled = false;
@@ -301,15 +326,22 @@
     }
   }
 
-  Object.values(filters).forEach((field) => field.addEventListener('input', updateReport));
+  // month dropdown sets the dates
+  Object.values(filters).forEach((field) => {
+    if (field !== filters.month) field.addEventListener('input', updateReport);
+  });
+  filters.month.addEventListener('change', applyMonth);
+
+  // typing dates manually overrides the month picker
+  [filters.from, filters.to].forEach((field) =>
+    field.addEventListener('input', () => { filters.month.selectedIndex = -1; })
+  );
   get('report-reset').addEventListener('click', () => {
-    filters.from.value = defaults.from;
-    filters.to.value = defaults.to;
+    filters.month.value = ''; // back to All
     filters.location.value = 'All';
-    filters.price.value = 'All';
     filters.volumeRange.value = 'All';
     filters.search.value = '';
-    updateReport();
+    applyMonth(); // full date range, then refreshes the report
   });
   exportButton.addEventListener('click', downloadCsv);
   printButton.addEventListener('click', () => {
