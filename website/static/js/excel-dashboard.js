@@ -103,11 +103,13 @@
         // so the fonts stay the same size and there is no empty space around it
         const W = Math.max(300, Math.round(root.clientWidth || (horizontal ? 440 : 700)));
         const H = horizontal
-            ? Math.max(420, Math.round(root.clientHeight || 620))
+            ? Math.max(380, Math.round(root.clientHeight || 420))
+            : opts.fill
+            ? Math.max(270, Math.round(root.clientHeight || 340))
             : Math.round(Math.min(340, Math.max(270, W * .45)));
 
         const margin = horizontal
-            ? { l: 100, r: 56, t: 10, b: 58 } // Margin left, right, top, bottom
+            ? { l: 118, r: 68, t: 10, b: 58 } // Margin left, right, top, bottom
             : { l: 78, r: 12, t: 18, b: 50 };
 
         // drawing area
@@ -153,14 +155,14 @@
 
         if (horizontal) {
             const rowH = innerH / items.length;
-            const barH = Math.min(36, rowH * .62);
+            const barH = Math.min(30, rowH * .6);
 
             // bar chart
             for (let t = 0; t <= ticks; t++) {
                 const x = margin.l + innerW * t / ticks;
 
                 grid.append(line(x, margin.t, x, margin.t + innerH));
-                chart.append(txt(x, margin.t + innerH + 18, number(step * t), 'middle', 13, { fill: '#4b5563' }));
+                chart.append(txt(x, margin.t + innerH + 18, number(step * t), 'middle', 14, { fill: '#4b5563' }));
             }
 
             items.forEach((d, i) => {
@@ -174,9 +176,11 @@
                 chart.append(
                     txt(
                         margin.l - 10,
-                        y + 5,
-                        d.label.length > 12 ? d.label.slice(0, 11) + '…' : d.label,
-                        'end'
+                        y + 6,
+                        d.label.length > 14 ? d.label.slice(0, 13) + '…' : d.label,
+                        'end',
+                        16,
+                        { fill: '#1a2d56' }
                     )
                 );
 
@@ -197,13 +201,15 @@
                         Math.min(margin.l + width + 7, W - margin.r + 4),
                         y + 5,
                         number(d.value),
-                        'start'
+                        'start',
+                        15,
+                        { fill: '#1a2d56', 'font-weight': 600 }
                     )
                 );
             });
 
             if (opts.xTitle) {
-                chart.append(txt(margin.l + innerW / 2, margin.t + innerH + 46, opts.xTitle, 'middle', 16, { fill: '#050B47', 'font-weight': 700 }));
+                chart.append(txt(margin.l + innerW / 2, margin.t + innerH + 46, opts.xTitle, 'middle', 17, { fill: '#050B47', 'font-weight': 700 }));
             }
 
         } else {
@@ -472,7 +478,8 @@
             'chart-volume',
             'column',
             days.map(d => ({ label: shortDate(d), value: dailyVolume.get(d) || 0 })),
-            v => number(v) + ' kg'
+            v => number(v) + ' kg',
+            { fill: true }
         );
 
         draw(

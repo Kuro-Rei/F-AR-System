@@ -146,7 +146,6 @@ def import_file():
 
 # Feeds the kpi and charts
 # non-archived rows only
-
 @views.route('/api/sales')
 def api_sales():
     conn = db.get_connection()
